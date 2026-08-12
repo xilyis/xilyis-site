@@ -202,7 +202,6 @@ const Contact: React.FC<ContactProps> = ({ isDarkMode }) => {
         </div>
       </div>
 
-
               {/* PAGE FOOTER */}
                 <div className="mt-24">
                   <PageFooter isDarkMode={isDarkMode} />

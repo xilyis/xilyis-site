@@ -67,7 +67,7 @@ const App: React.FC = () => {
 
   const toggleMode = () => setIsDarkMode(!isDarkMode);
 
-  // Properly implemented render function for all views
+  
   const renderContent = (): JSX.Element | null => {
     switch (currentView) {
       case 'hero':
@@ -88,7 +88,7 @@ const App: React.FC = () => {
   const isFixedView = ['hero'].includes(currentView);
 
   return (
-    <div className={`relative min-h-screen w-full transition-colors duration-1000 font-['Inter'] selection:bg-zinc-500/30 overflow-x-hidden ${isDarkMode ? 'bg-black text-white' : 'bg-zinc-50 text-black'}`}>
+<div className={`w-full px-4 md:px-6 lg:px-10 py-8 md:py-10 flex flex-col ${isDarkMode ? 'text-white bg-black' : 'text-black bg-white'}`}>
       {/* Grain layer */}
       <div className="grain" />
       
@@ -111,7 +111,7 @@ const App: React.FC = () => {
       
       <main 
         ref={mainContentRef}
-        className={`relative z-20 w-full min-h-screen flex flex-col items-center px-8 md:px-[10%] pt-16 ${isFixedView ? 'pb-16 h-screen overflow-hidden' : 'pb-24'}`}
+        className={`relative z-20 w-full min-h-screen flex flex-col items-center px-8 md:px-[10%] pt-16 ${isFixedView ? 'pb-16 h-screen overflow-hidden' : 'pb-12'}`}
       >
         {renderContent()}
       </main>

@@ -6,8 +6,8 @@ import { useGSAP } from '@gsap/react';
 interface NavbarProps {
   currentTime: Date;
   isDarkMode: boolean;
-  onNavigate: (view: 'hero' | 'about' | 'artifacts' | 'exhibits' | 'case' | 'publications' | 'contact' | 'portfolio') => void;
-  currentView: 'hero' | 'about' | 'artifacts' | 'exhibits' | 'case' | 'publications' | 'contact' | 'portfolio';
+  onNavigate: (view: 'hero' | 'about' | 'artifacts' | 'contact') => void;
+  currentView: 'hero' | 'about' | 'artifacts' | 'contact';
 }
 
 const Navbar: React.FC<NavbarProps> = ({ currentTime, isDarkMode, onNavigate, currentView }) => {
@@ -146,7 +146,7 @@ const Navbar: React.FC<NavbarProps> = ({ currentTime, isDarkMode, onNavigate, cu
 
            {/* Footer inside Menu */}
            <div className="h-20 flex items-center justify-between px-6 md:px-10 border-t border-current/10 text-[9px] tracking-[0.2em] uppercase opacity-40">
-              <span>XILYAS</span>
+              <span>XILYIS</span>
               <span>{formatTime(currentTime)}</span>
            </div>
         </div>
