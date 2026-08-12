@@ -3,8 +3,7 @@ import React, { useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
-
-// Register ScrollTrigger plugin
+import PageFooter from './PageFooter';
 gsap.registerPlugin(ScrollTrigger);
 
 interface Capability {
@@ -105,6 +104,13 @@ const About: React.FC<AboutProps> = ({ isDarkMode, onNavigate }) => {
               </p>
             </div>
           </div>
+        </div>
+      </section>
+
+{/* PAGE FOOTER - 4 COLUMN LAYOUT */}
+      <section>
+        <div className="mt-24">
+          <PageFooter isDarkMode={isDarkMode} />
         </div>
       </section>
 
