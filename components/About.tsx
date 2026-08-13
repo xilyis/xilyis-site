@@ -75,11 +75,6 @@ const About: React.FC<AboutProps> = ({ isDarkMode, onNavigate }) => {
 
   return (
   <div ref={containerRef} className="w-full max-w-[1100px] mx-auto py-10 md:py-24 pb-0 flex flex-col gap-20 md:gap-32 relative">
-      
-      {/* BACKGROUND DECOR - Scaled */}
-      <div className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full pointer-events-none opacity-[0.025] flex items-center justify-center z-[-1]`}>
-        <div className="text-[20vw] font-black uppercase select-none tracking-tight text-current">ARCHIVE</div>
-      </div>
 
       {/* HEADER SECTION*/}
       <section className="relative w-full px-4 md:px-0">
