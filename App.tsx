@@ -3,6 +3,7 @@ import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import About from './components/About';
 import Artifacts from './components/Artifacts';
+import ArtifactDetail from './components/ArtifactDetail';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import gsap from 'gsap';
@@ -14,6 +15,7 @@ const App: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [currentView, setCurrentView] = useState<View>('hero');
+  const [selectedArtifactId, setSelectedArtifactId] = useState<string>();  // NEW
   
   const leftLineRef = useRef<HTMLDivElement>(null);
   const rightLineRef = useRef<HTMLDivElement>(null);
@@ -51,6 +53,7 @@ const App: React.FC = () => {
       ease: 'power2.inOut',
       onComplete: () => {
         setCurrentView(view);
+        setSelectedArtifactId(undefined);  // Reset artifact selection
         window.scrollTo(0, 0);
         
         if (mainContentRef.current) {
@@ -67,19 +70,41 @@ const App: React.FC = () => {
 
   const toggleMode = () => setIsDarkMode(!isDarkMode);
 
+  const goBackFromDetail = () => {
+    setSelectedArtifactId(undefined);
+  };
+
   
   const renderContent = (): JSX.Element | null => {
+    if (currentView === 'artifacts' && selectedArtifactId) {
+      return (
+        <ArtifactDetail 
+          isDarkMode={isDarkMode}
+          artifactId={selectedArtifactId}
+          onBack={goBackFromDetail}
+          onAssetClick={(index) => {
+            console.log('Open asset expanded view for index:', index);
+          }}
+        />
+      );
+    }
+
     switch (currentView) {
       case 'hero':
         return <Hero isDarkMode={isDarkMode} onNavigate={navigateTo} />;
       case 'about':
         return <About isDarkMode={isDarkMode} onNavigate={navigateTo} />;
       case 'artifacts':
-        return <Artifacts isDarkMode={isDarkMode} />;
+        return (
+          <Artifacts 
+            isDarkMode={isDarkMode}
+            onNavigate={navigateTo}
+            onNavigateToDetail={(id) => setSelectedArtifactId(id)}  // NEW
+          />
+        );
       case 'contact':
         return <Contact isDarkMode={isDarkMode} />;
       default:
-        // Exhaustive check - this will error if View type changes
         const _exhaustiveCheck: never = currentView;
         return null;
     }
