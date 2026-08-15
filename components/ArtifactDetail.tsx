@@ -128,39 +128,41 @@ const ArtifactDetail: React.FC<ArtifactDetailProps> = ({
   return (
     <div ref={containerRef} className={`h-screen w-full overflow-hidden px-4 md:px-6 lg:px-10 py-4 md:py-5 flex flex-col ${isDarkMode ? 'text-white bg-black' : 'text-black bg-white'}`}>
       
-{/*  TOP ROW */}
-<div className="detail-header flex justify-between items-start mb-5">
-  <div className="flex flex-col">
-    <span className="text-[7px] md:text-[8px] tracking-[0.4em] uppercase opacity-60 mb-2">
-      {entry.status} // ARTIFACT_DETAIL
-    </span>
-    <h1 className="text-[1.5rem] md:text-[1.75rem] lg:text-[2rem] font-[100] uppercase tracking-[0.05em] leading-none">
-      {entry.label}
-    </h1>
-    
-    {/* Back Button */}
-    {onBack && (
-      <button
-        onClick={onBack}
-        className={`mt-3 text-[7px] tracking-[0.2em] uppercase transition-all duration-300 
-          opacity-60 hover:opacity-100 border px-4 py-1.5 inline-block ${
-          isDarkMode 
-            ? 'border-zinc-800 hover:border-zinc-600' 
-            : 'border-zinc-300 hover:border-zinc-400'
-        }`}
-      >
-        ‹ BACK
-      </button>
-    )}
-  </div>
-  
-  {/* Tool Tip */}
-  <div className={`detail-tool-tip text-[7px] md:text-[8px] tracking-[0.15em] uppercase opacity-50 max-w-xs text-right hidden md:block transition-opacity duration-300 ${
-    tooltipVisible ? 'opacity-50' : 'opacity-0'
+{/*  TOP ROW: BACK BUTTON, TITLE & TOOL TIP  */}
+<div className="detail-header mb-5">
+  {/* Back Button - Top Left */}
+  {onBack && (
+    <button
+      onClick={onBack}
+      className={`text-[7px] md:text-[8px] tracking-[0.2em] uppercase transition-all duration-300 
+        opacity-50 hover:opacity-100 mb-4 ${
+        isDarkMode ? 'text-white' : 'text-black'
+      }`}
+    >
+      ‹ BACK
+    </button>
+  )}
+
+  {/* Status Line */}
+  <span className={`text-[7px] md:text-[8px] tracking-[0.4em] uppercase block mb-2 ${
+    isDarkMode ? 'opacity-60' : 'opacity-70'
   }`}>
-    ← → KEYS TO NAVIGATE ASSETS<br/>
-    ? TOGGLE HELP • ESC TO RETURN
-  </div>
+    {entry.status} // ARTIFACT_DETAIL
+  </span>
+
+  {/* Title */}
+  <h1 className={`text-[1.5rem] md:text-[1.75rem] lg:text-[2rem] font-[100] uppercase tracking-[0.05em] leading-none mb-2 ${
+    isDarkMode ? 'text-white' : 'text-black'
+  }`}>
+    {entry.label}
+  </h1>
+</div>
+
+{/* Tool Tip - Top Right (separate) */}
+<div className={`detail-tool-tip text-[7px] md:text-[8px] tracking-[0.15em] uppercase opacity-50 max-w-xs text-right hidden md:block transition-opacity duration-300 absolute right-10 top-4 ${
+  tooltipVisible ? 'opacity-50' : 'opacity-0'
+}`}>
+  TOGGLE TO NAVIGATE<br/>
 </div>
 
       {/*  MAIN PREVIEW AREA WITH OVERLAY SLIDESHOW  */}
