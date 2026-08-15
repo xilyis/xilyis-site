@@ -64,7 +64,7 @@ onNavigateToDetail
   }, { scope: containerRef });
 
   return (
-    <div ref={containerRef} className={`h-screen w-full overflow-hidden px-4 md:px-6 lg:px-10 py-4 md:py-5 flex flex-col ${isDarkMode ? 'text-white bg-black' : 'text-black bg-white'}`}>
+    <div ref={containerRef} className={`w-full px-[10px] md:px-6 lg:px-10 pt-4 flex flex-col ${isDarkMode ? 'text-white bg-black' : 'text-black bg-white'}`}>
       
       {/* Header Section */}
       <div className="mb-6">
@@ -80,10 +80,10 @@ onNavigateToDetail
       </div>
 
       {/* List Section - Fixed height, scrolling internally */}
-      <div 
-        className="overflow-y-auto pr-2 mb-6 scrollbar-thin"
-        style={{ height: '280px' }}
+      <div className="overflow-y-auto pr-2 mb-6 scrollbar-thin" 
+      style={{ height: '300px' }}
       >
+
         <div className="space-y-1 max-w-xl pb-4">
           {entries.map((entry, i) => (
             <button
@@ -119,7 +119,7 @@ onNavigateToDetail
       </div>
 
       {/* Bottom Section */}
-      <div className="max-w-2xl border-t border-zinc-800 pt-4">
+      <div className="border-t border-zinc-800 pt-4">
         {/* Metadata Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-[7px] tracking-[0.2em] uppercase">
           <div className={`${isDarkMode ? 'opacity-50' : 'opacity-60'}`}>ID_CODE</div>
@@ -151,29 +151,6 @@ onNavigateToDetail
               VIEW
             </button>
         </div>
-
-        {/* Navigation */}
-        {onNavigate && (
-          <div className={`flex justify-between items-center pt-4 mt-4 border-t ${isDarkMode ? 'border-zinc-900/50' : 'border-zinc-200'}`}>
-            <div className={`uppercase tracking-[0.2em] text-[7px] ${isDarkMode ? 'opacity-40' : 'opacity-50'}`}>
-              XILYAS // ARCHIVE
-            </div>
-            <div className="flex gap-2 md:gap-3">
-              <button
-                onClick={() => onNavigate('hero')}
-                className={`text-[7px] tracking-[0.2em] uppercase transition-opacity border px-3 py-1.5 ${isDarkMode ? 'border-zinc-800 hover:border-zinc-600 opacity-60 hover:opacity-100' : 'border-zinc-300 hover:border-zinc-400 opacity-60 hover:opacity-100'}`}
-              >
-                HOME
-              </button>
-              <button
-                onClick={() => onNavigate('contact')}
-                className={`text-[7px] tracking-[0.2em] uppercase transition-opacity border px-3 py-1.5 ${isDarkMode ? 'border-zinc-800 hover:border-zinc-600 opacity-60 hover:opacity-100' : 'border-zinc-300 hover:border-zinc-400 opacity-60 hover:opacity-100'}`}
-              >
-                CONTACT
-              </button>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
