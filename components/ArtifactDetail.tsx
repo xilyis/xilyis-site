@@ -120,7 +120,7 @@ const ArtifactDetail: React.FC<ArtifactDetailProps> = ({
   };
 
   return (
-    <div ref={containerRef} className={`h-screen w-full overflow-hidden flex flex-col ${isDarkMode ? 'text-white bg-black' : 'text-black bg-white'}`}>
+    <div ref={containerRef} className={`w-full px-[10px] md:px-6 lg:px-10 flex flex-col ${isDarkMode ? 'text-white bg-black' : 'text-black bg-white'}`}>
       
       {/* Header Section - With Internal Padding */}
       <div className="detail-header mb-5">
@@ -281,19 +281,6 @@ const ArtifactDetail: React.FC<ArtifactDetailProps> = ({
           </span>
         </div>
       </div>
-
-      {/* Footer Navigation */}
-      {onBack && (
-        <div className={`flex justify-between items-center pt-4 mt-4 border-t ${
-          isDarkMode ? 'border-zinc-900/50' : 'border-zinc-200'
-        } px-4 md:px-6 lg:px-10`}>
-          <div className={`uppercase tracking-[0.2em] text-[7px] ${
-            isDarkMode ? 'opacity-40' : 'opacity-50'
-          }`}>
-            XILYAS // ARTIFACT_DETAIL
-          </div>
-        </div>
-      )}
     </div>
   );
 };
