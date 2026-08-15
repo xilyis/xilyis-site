@@ -286,27 +286,6 @@ const ArtifactDetail: React.FC<ArtifactDetailProps> = ({
         </div>
       </div>
 
-      {/* Thumbnail Strip */}
-      <div className="flex justify-center gap-2 mt-4 pt-4 border-t border-zinc-800">
-        {media.map((src, i) => (
-          <div
-            key={i}
-            onClick={() => setActiveThumbnailIndex(i)}
-            className={`w-12 h-16 border cursor-pointer transition-all duration-300 overflow-hidden rounded-sm ${
-              i === activeThumbnailIndex
-                ? `${isDarkMode ? 'border-white' : 'border-black'} opacity-100`
-                : `${isDarkMode ? 'border-zinc-700' : 'border-zinc-400'} opacity-40 hover:opacity-70`
-            }`}
-          >
-            {src.endsWith('.mp4') || src.endsWith('.webm') ? (
-              <video src={src} className="w-full h-full object-cover" muted playsInline />
-            ) : (
-              <img src={src} alt="" className="w-full h-full object-cover" />
-            )}
-          </div>
-        ))}
-      </div>
-
       {/* Mobile Navigation Hint */}
       <div className="mt-3 md:hidden">
         <div className="text-[7px] tracking-[0.15em] opacity-40 text-center">
