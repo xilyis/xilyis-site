@@ -21,7 +21,11 @@ void;
   onNavigateToDetail?: (artifactId: string) => void;
 }
 
-const Artifacts: React.FC<ArtifactsProps> = ({ isDarkMode, onNavigate }) => {
+const Artifacts: React.FC<ArtifactsProps> = ({ 
+  isDarkMode, 
+  onNavigate,
+onNavigateToDetail
+}) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [selectedEntry, setSelectedEntry] = useState(0);
   
@@ -84,7 +88,10 @@ const Artifacts: React.FC<ArtifactsProps> = ({ isDarkMode, onNavigate }) => {
           {entries.map((entry, i) => (
             <button
               key={i}
-              onClick={() => setSelectedEntry(i)}
+              onClick={() => {
+                setSelectedEntry(i);
+              onNavigateToDetail?.(entry.id);
+              }}
               className="entry-list-item w-full text-left transition-all duration-300 group"
             >
               <div className={`border transition-all duration-300 p-3 md:p-4 ${
