@@ -16,7 +16,9 @@ interface ArtifactEntry {
 
 interface ArtifactsProps {
   isDarkMode: boolean;
-  onNavigate?: (view: 'hero' | 'about' | 'artifacts' | 'contact') => void;
+  onNavigate?: (view: 'hero' | 'about' | 'artifacts' | 'contact') => 
+void;
+  onNavigateToDetail?: (artifactId: string) => void;
 }
 
 const Artifacts: React.FC<ArtifactsProps> = ({ isDarkMode, onNavigate }) => {
