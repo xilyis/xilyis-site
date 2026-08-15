@@ -75,7 +75,7 @@ const App: React.FC = () => {
   };
 
   
-  const renderContent = (): JSX.Element | null => {
+const renderContent = () => {
     if (currentView === 'artifacts' && selectedArtifactId) {
       return (
         <ArtifactDetail 
