@@ -31,22 +31,24 @@ const Artifacts: React.FC<ArtifactsProps> = ({ isDarkMode, onNavigate }) => {
     label: 'ENTRY 01',
     status: 'ACTIVE',
     timestamp: '2024.08.11',
-    thumbnail: '/assets/sacred-patterns-thumb.png',
-    description: 'Generative geometry with rotational symmetry',
-    sourceUrl: 'https://github.com/you/repo/blob/main/SacredPatterns.py',
-    downloadUrl: '/assets/sacred-patterns.png',
-    type: 'python'
+    thumbnail: '/assets/default-placeholder.png',
+    description: 'Coming soon...',
+    sourceUrl: '#',
+    downloadUrl: '/assets/default-placeholder.png',
+    type: 'python',
+    media: ['/assets/default-placeholder.png', '/assets/default-placeholder.png']
   },
-  // Add more entries manually or generate placeholders...
+
   {
     id: '02',
     label: 'ENTRY 02',
     status: 'VER_2',
     timestamp: '2024.03.15',
     thumbnail: '/assets/default-placeholder.png',
-    description: 'Coming soon',
+    description: 'Coming soon...',
     sourceUrl: '#',
-    type: 'python'
+    type: 'python',
+    media: ['/assets/default-placeholder.png']
   }
 ];
 
