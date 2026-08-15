@@ -89,9 +89,7 @@ onNavigateToDetail
             <button
               key={i}
               onClick={() => {
-                setSelectedEntry(i);
-              onNavigateToDetail?.(entry.id);
-              }}
+                setSelectedEntry(i);              }}
               className="entry-list-item w-full text-left transition-all duration-300 group"
             >
               <div className={`border transition-all duration-300 p-3 md:p-4 ${
@@ -145,14 +143,13 @@ onNavigateToDetail
               ↓ DOWNLOAD
             </a>
           )}
-          <a 
-            href={entries[selectedEntry].sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[7px] tracking-[0.2em] uppercase opacity-60 hover:opacity-100 border border-current/20 px-3 py-1.5 transition-all"
-          >
-            📄 VIEW SOURCE
-          </a>
+         {/* VIEW DETAILS button */}
+            <button
+              onClick={() => onNavigateToDetail?.(entries[selectedEntry].id)}
+              className="text-[7px] tracking-[0.2em] uppercase opacity-60 hover:opacity-100 border border-current/20 px-3 py-1.5 transition-all"
+            >
+              VIEW DETAILS
+            </button>
         </div>
 
         {/* Navigation */}
