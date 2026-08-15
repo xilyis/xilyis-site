@@ -128,25 +128,40 @@ const ArtifactDetail: React.FC<ArtifactDetailProps> = ({
   return (
     <div ref={containerRef} className={`h-screen w-full overflow-hidden px-4 md:px-6 lg:px-10 py-4 md:py-5 flex flex-col ${isDarkMode ? 'text-white bg-black' : 'text-black bg-white'}`}>
       
-      {/*  TOP ROW: TITLE & TOOL TIP  */}
-      <div className="detail-header flex justify-between items-start mb-5">
-        <div className="flex flex-col">
-          <span className="text-[7px] md:text-[8px] tracking-[0.4em] uppercase opacity-60 mb-2">
-            {entry.status} // ARTIFACT_DETAIL
-          </span>
-          <h1 className="text-[1.5rem] md:text-[1.75rem] lg:text-[2rem] font-[100] uppercase tracking-[0.05em] leading-none">
-            {entry.label}
-          </h1>
-        </div>
-        
-        {/* <1> Tool Tip */}
-        <div className={`detail-tool-tip text-[7px] md:text-[8px] tracking-[0.15em] uppercase opacity-50 max-w-xs text-right hidden md:block transition-opacity duration-300 ${
-          tooltipVisible ? 'opacity-50' : 'opacity-0'
-        }`}>
-          ← → KEYS TO NAVIGATE ASSETS<br/>
-          ? TOGGLE HELP • ESC TO RETURN
-        </div>
-      </div>
+{/*  TOP ROW */}
+<div className="detail-header flex justify-between items-start mb-5">
+  <div className="flex flex-col">
+    <span className="text-[7px] md:text-[8px] tracking-[0.4em] uppercase opacity-60 mb-2">
+      {entry.status} // ARTIFACT_DETAIL
+    </span>
+    <h1 className="text-[1.5rem] md:text-[1.75rem] lg:text-[2rem] font-[100] uppercase tracking-[0.05em] leading-none">
+      {entry.label}
+    </h1>
+    
+    {/* Back Button */}
+    {onBack && (
+      <button
+        onClick={onBack}
+        className={`mt-3 text-[7px] tracking-[0.2em] uppercase transition-all duration-300 
+          opacity-60 hover:opacity-100 border px-4 py-1.5 inline-block ${
+          isDarkMode 
+            ? 'border-zinc-800 hover:border-zinc-600' 
+            : 'border-zinc-300 hover:border-zinc-400'
+        }`}
+      >
+        ‹ BACK
+      </button>
+    )}
+  </div>
+  
+  {/* Tool Tip */}
+  <div className={`detail-tool-tip text-[7px] md:text-[8px] tracking-[0.15em] uppercase opacity-50 max-w-xs text-right hidden md:block transition-opacity duration-300 ${
+    tooltipVisible ? 'opacity-50' : 'opacity-0'
+  }`}>
+    ← → KEYS TO NAVIGATE ASSETS<br/>
+    ? TOGGLE HELP • ESC TO RETURN
+  </div>
+</div>
 
       {/*  MAIN PREVIEW AREA WITH OVERLAY SLIDESHOW  */}
       <div className="flex-1 flex items-center justify-center relative my-4">
@@ -304,18 +319,6 @@ const ArtifactDetail: React.FC<ArtifactDetailProps> = ({
         <div className={`flex justify-between items-center pt-4 mt-4 border-t ${
           isDarkMode ? 'border-zinc-900/50' : 'border-zinc-200'
         }`}>
-          <button
-            onClick={onBack}
-            className={`text-[7px] tracking-[0.2em] uppercase transition-all duration-300 
-              opacity-60 hover:opacity-100 border px-4 py-2 ${
-              isDarkMode 
-                ? 'border-zinc-800 hover:border-zinc-600' 
-                : 'border-zinc-300 hover:border-zinc-400'
-            }`}
-          >
-            ‹ BACK TO ARCHIVE
-          </button>
-          
           <div className={`uppercase tracking-[0.2em] text-[7px] ${
             isDarkMode ? 'opacity-40' : 'opacity-50'
           }`}>
