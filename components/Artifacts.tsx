@@ -16,10 +16,16 @@ interface ArtifactEntry {
 
 interface ArtifactsProps {
   isDarkMode: boolean;
-  onNavigate?: (view: 'hero' | 'about' | 'artifacts' | 'contact') => void;
+  onNavigate?: (view: 'hero' | 'about' | 'artifacts' | 'contact') => 
+void;
+  onNavigateToDetail?: (artifactId: string) => void;
 }
 
-const Artifacts: React.FC<ArtifactsProps> = ({ isDarkMode, onNavigate }) => {
+const Artifacts: React.FC<ArtifactsProps> = ({ 
+  isDarkMode, 
+  onNavigate,
+onNavigateToDetail
+}) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [selectedEntry, setSelectedEntry] = useState(0);
   
@@ -29,22 +35,24 @@ const Artifacts: React.FC<ArtifactsProps> = ({ isDarkMode, onNavigate }) => {
     label: 'ENTRY 01',
     status: 'ACTIVE',
     timestamp: '2024.08.11',
-    thumbnail: '/assets/sacred-patterns-thumb.png',
-    description: 'Generative geometry with rotational symmetry',
-    sourceUrl: 'https://github.com/you/repo/blob/main/SacredPatterns.py',
-    downloadUrl: '/assets/sacred-patterns.png',
-    type: 'python'
+    thumbnail: '/assets/default-placeholder.png',
+    description: 'Coming soon...',
+    sourceUrl: '#',
+    downloadUrl: '/assets/default-placeholder.png',
+    type: 'python',
+    media: ['/assets/default-placeholder.png', '/assets/default-placeholder.png']
   },
-  // Add more entries manually or generate placeholders...
+
   {
     id: '02',
     label: 'ENTRY 02',
     status: 'VER_2',
     timestamp: '2024.03.15',
     thumbnail: '/assets/default-placeholder.png',
-    description: 'Coming soon',
+    description: 'Coming soon...',
     sourceUrl: '#',
-    type: 'python'
+    type: 'python',
+    media: ['/assets/default-placeholder.png']
   }
 ];
 
@@ -56,7 +64,7 @@ const Artifacts: React.FC<ArtifactsProps> = ({ isDarkMode, onNavigate }) => {
   }, { scope: containerRef });
 
   return (
-    <div ref={containerRef} className={`h-screen w-full overflow-hidden px-4 md:px-6 lg:px-10 py-4 md:py-5 flex flex-col ${isDarkMode ? 'text-white bg-black' : 'text-black bg-white'}`}>
+    <div ref={containerRef} className={`w-full px-[10px] md:px-6 lg:px-10 pt-4 flex flex-col ${isDarkMode ? 'text-white bg-black' : 'text-black bg-white'}`}>
       
       {/* Header Section */}
       <div className="mb-6">
@@ -72,15 +80,16 @@ const Artifacts: React.FC<ArtifactsProps> = ({ isDarkMode, onNavigate }) => {
       </div>
 
       {/* List Section - Fixed height, scrolling internally */}
-      <div 
-        className="overflow-y-auto pr-2 mb-6 scrollbar-thin"
-        style={{ height: '280px' }}
+      <div className="overflow-y-auto pr-2 mb-6 scrollbar-thin" 
+      style={{ height: '300px' }}
       >
+
         <div className="space-y-1 max-w-xl pb-4">
           {entries.map((entry, i) => (
             <button
               key={i}
-              onClick={() => setSelectedEntry(i)}
+              onClick={() => {
+                setSelectedEntry(i);              }}
               className="entry-list-item w-full text-left transition-all duration-300 group"
             >
               <div className={`border transition-all duration-300 p-3 md:p-4 ${
@@ -110,7 +119,7 @@ const Artifacts: React.FC<ArtifactsProps> = ({ isDarkMode, onNavigate }) => {
       </div>
 
       {/* Bottom Section */}
-      <div className="max-w-2xl border-t border-zinc-800 pt-4">
+      <div className="border-t border-zinc-800 pt-4">
         {/* Metadata Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-[7px] tracking-[0.2em] uppercase">
           <div className={`${isDarkMode ? 'opacity-50' : 'opacity-60'}`}>ID_CODE</div>
@@ -134,38 +143,14 @@ const Artifacts: React.FC<ArtifactsProps> = ({ isDarkMode, onNavigate }) => {
               ↓ DOWNLOAD
             </a>
           )}
-          <a 
-            href={entries[selectedEntry].sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[7px] tracking-[0.2em] uppercase opacity-60 hover:opacity-100 border border-current/20 px-3 py-1.5 transition-all"
-          >
-            📄 VIEW SOURCE
-          </a>
+         {/* VIEW button */}
+            <button
+              onClick={() => onNavigateToDetail?.(entries[selectedEntry].id)}
+              className="text-[7px] tracking-[0.2em] uppercase opacity-60 hover:opacity-100 border border-current/20 px-3 py-1.5 transition-all"
+            >
+              VIEW
+            </button>
         </div>
-
-        {/* Navigation */}
-        {onNavigate && (
-          <div className={`flex justify-between items-center pt-4 mt-4 border-t ${isDarkMode ? 'border-zinc-900/50' : 'border-zinc-200'}`}>
-            <div className={`uppercase tracking-[0.2em] text-[7px] ${isDarkMode ? 'opacity-40' : 'opacity-50'}`}>
-              XILYAS // ARCHIVE
-            </div>
-            <div className="flex gap-2 md:gap-3">
-              <button
-                onClick={() => onNavigate('hero')}
-                className={`text-[7px] tracking-[0.2em] uppercase transition-opacity border px-3 py-1.5 ${isDarkMode ? 'border-zinc-800 hover:border-zinc-600 opacity-60 hover:opacity-100' : 'border-zinc-300 hover:border-zinc-400 opacity-60 hover:opacity-100'}`}
-              >
-                HOME
-              </button>
-              <button
-                onClick={() => onNavigate('contact')}
-                className={`text-[7px] tracking-[0.2em] uppercase transition-opacity border px-3 py-1.5 ${isDarkMode ? 'border-zinc-800 hover:border-zinc-600 opacity-60 hover:opacity-100' : 'border-zinc-300 hover:border-zinc-400 opacity-60 hover:opacity-100'}`}
-              >
-                CONTACT
-              </button>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
