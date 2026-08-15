@@ -45,22 +45,18 @@ const ArtifactDetail: React.FC<ArtifactDetailProps> = ({
     }
   ];
 
-  // Find the entry matching artifactId
   const entry = entries.find(e => e.id === artifactId) || entries[0];
   const media = entry.media || [entry.thumbnail];
 
-  // Reset thumbnail index when artifact changes
   useEffect(() => {
     setActiveThumbnailIndex(0);
   }, [artifactId]);
 
-  // Auto-hide tooltip after 5 seconds
   useEffect(() => {
     const timer = setTimeout(() => setTooltipVisible(false), 5000);
     return () => clearTimeout(timer);
   }, []);
 
-  // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight' || e.key === ' ') {
@@ -80,7 +76,6 @@ const ArtifactDetail: React.FC<ArtifactDetailProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [media.length, onBack]);
 
-  // GSAP entrance animations
   useGSAP(() => {
     const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
     
@@ -97,7 +92,6 @@ const ArtifactDetail: React.FC<ArtifactDetailProps> = ({
       .from('.detail-actions', { opacity: 0, y: 15, duration: 0.4 }, '-=0.2');
   }, { scope: containerRef });
 
-  // Animate preview cards on index change
   useEffect(() => {
     const tl = gsap.timeline();
     
@@ -126,48 +120,48 @@ const ArtifactDetail: React.FC<ArtifactDetailProps> = ({
   };
 
   return (
-    <div ref={containerRef} className={`h-screen w-full overflow-hidden px-4 md:px-6 lg:px-10 py-4 md:py-5 flex flex-col ${isDarkMode ? 'text-white bg-black' : 'text-black bg-white'}`}>
+    <div ref={containerRef} className={`h-screen w-full overflow-hidden flex flex-col ${isDarkMode ? 'text-white bg-black' : 'text-black bg-white'}`}>
       
-{/*  TOP ROW: BACK BUTTON, TITLE & TOOL TIP  */}
-<div className="detail-header mb-5">
-  {/* Back Button - Top Left */}
-  {onBack && (
-    <button
-      onClick={onBack}
-      className={`text-[7px] md:text-[8px] tracking-[0.2em] uppercase transition-all duration-300 
-        opacity-50 hover:opacity-100 mb-4 ${
-        isDarkMode ? 'text-white' : 'text-black'
-      }`}
-    >
-      ‹ BACK
-    </button>
-  )}
+      {/* Header Section - With Internal Padding */}
+      <div className="detail-header mb-5">
+        {/* Back Button - Top Left */}
+        {onBack && (
+          <button
+            onClick={onBack}
+            className={`text-[7px] md:text-[8px] tracking-[0.2em] uppercase transition-all duration-300 
+              opacity-50 hover:opacity-100 mb-4 ${
+              isDarkMode ? 'text-white' : 'text-black'
+            }`}
+          >
+            ‹ BACK
+          </button>
+        )}
 
-  {/* Status Line */}
-  <span className={`text-[7px] md:text-[8px] tracking-[0.4em] uppercase block mb-2 ${
-    isDarkMode ? 'opacity-60' : 'opacity-70'
-  }`}>
-    {entry.status} // ARTIFACT_DETAIL
-  </span>
+        {/* Status Line */}
+        <span className={`text-[7px] md:text-[8px] tracking-[0.4em] uppercase block mb-2 ${
+          isDarkMode ? 'opacity-60' : 'opacity-70'
+        }`}>
+          {entry.status} // ARTIFACT_DETAIL
+        </span>
 
-  {/* Title */}
-  <h1 className={`text-[1.5rem] md:text-[1.75rem] lg:text-[2rem] font-[100] uppercase tracking-[0.05em] leading-none mb-2 ${
-    isDarkMode ? 'text-white' : 'text-black'
-  }`}>
-    {entry.label}
-  </h1>
-</div>
+        {/* Title */}
+        <h1 className={`text-[1.5rem] md:text-[1.75rem] lg:text-[2rem] font-[100] uppercase tracking-[0.05em] leading-none mb-2 ${
+          isDarkMode ? 'text-white' : 'text-black'
+        }`}>
+          {entry.label}
+        </h1>
+      </div>
 
-{/* Tool Tip - Top Right (separate) */}
-<div className={`detail-tool-tip text-[7px] md:text-[8px] tracking-[0.15em] uppercase opacity-50 max-w-xs text-right hidden md:block transition-opacity duration-300 absolute right-10 top-4 ${
-  tooltipVisible ? 'opacity-50' : 'opacity-0'
-}`}>
-  TOGGLE TO NAVIGATE<br/>
-</div>
+      {/* Tool Tip - Top Right (absolute position) */}
+      <div className={`detail-tool-tip text-[7px] md:text-[8px] tracking-[0.15em] uppercase opacity-50 max-w-xs text-right hidden md:block transition-opacity duration-300 absolute right-10 top-4 ${
+        tooltipVisible ? 'opacity-50' : 'opacity-0'
+      }`}>
+        TOGGLE TO NAVIGATE<br/>
+      </div>
 
-      {/*  MAIN PREVIEW AREA WITH OVERLAY SLIDESHOW  */}
-      <div className="flex-1 flex items-center justify-center relative my-4">
-        <div className="relative w-full max-w-5xl h-[45vh] md:h-[55vh]">
+      {/* Preview Area - With Internal Padding */}
+      <div className="flex-1 flex items-center justify-center relative my-4 px-4 md:px-6 lg:px-10">
+        <div className="relative w-full h-[45vh] md:h-[55vh]">
           {media.map((src, i) => {
             const isActive = i === activeThumbnailIndex;
             const offset = i - activeThumbnailIndex;
@@ -214,7 +208,7 @@ const ArtifactDetail: React.FC<ArtifactDetailProps> = ({
                     />
                   )}
 
-                  {/* Hover overlay indicating clickable to page 3 */}
+                  {/* Hover overlay */}
                   <div className={`absolute inset-0 ${isDarkMode ? 'bg-black/30' : 'bg-white/30'} opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none`}>
                     <span className="text-[7px] md:text-[8px] tracking-[0.2em] uppercase font-mono opacity-90">
                       CLICK FOR DETAILS →
@@ -245,9 +239,9 @@ const ArtifactDetail: React.FC<ArtifactDetailProps> = ({
         </button>
       </div>
 
-      {/*  BOTTOM SECTION: META INFO  */}
-      <div className="detail-meta grid grid-cols-1 md:grid-cols-3 gap-4 mt-auto pt-5">
-        {/* <4> Brief Description */}
+      {/* Meta Info - With Internal Padding */}
+      <div className="detail-meta grid grid-cols-1 md:grid-cols-3 gap-4 mt-auto pt-5 px-4 md:px-6 lg:px-10">
+        {/* Brief Description */}
         <div className="text-[7px] md:text-[8px] tracking-[0.15em] uppercase leading-relaxed opacity-50">
           DESCRIPTION
           <span className="block mt-2 leading-relaxed opacity-100">
@@ -273,11 +267,11 @@ const ArtifactDetail: React.FC<ArtifactDetailProps> = ({
             rel="noopener noreferrer"
             className="text-[7px] md:text-[8px] tracking-[0.2em] uppercase opacity-60 hover:opacity-100 border border-current/20 px-3 py-1.5 transition-all"
           >
-            📄 VIEW SOURCE
+            VIEW
           </a>
         </div>
 
-        {/* <2> Date/Time */}
+        {/* Date/Time */}
         <div className="text-right">
           <span className="text-[7px] md:text-[8px] tracking-[0.15em] uppercase opacity-50 block">
             IMPLEMENTED
@@ -288,11 +282,11 @@ const ArtifactDetail: React.FC<ArtifactDetailProps> = ({
         </div>
       </div>
 
-      {/*  FOOTER NAVIGATION  */}
+      {/* Footer Navigation */}
       {onBack && (
         <div className={`flex justify-between items-center pt-4 mt-4 border-t ${
           isDarkMode ? 'border-zinc-900/50' : 'border-zinc-200'
-        }`}>
+        } px-4 md:px-6 lg:px-10`}>
           <div className={`uppercase tracking-[0.2em] text-[7px] ${
             isDarkMode ? 'opacity-40' : 'opacity-50'
           }`}>

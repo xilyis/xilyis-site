@@ -143,12 +143,12 @@ onNavigateToDetail
               ↓ DOWNLOAD
             </a>
           )}
-         {/* VIEW DETAILS button */}
+         {/* VIEW button */}
             <button
               onClick={() => onNavigateToDetail?.(entries[selectedEntry].id)}
               className="text-[7px] tracking-[0.2em] uppercase opacity-60 hover:opacity-100 border border-current/20 px-3 py-1.5 transition-all"
             >
-              VIEW DETAILS
+              VIEW
             </button>
         </div>
 

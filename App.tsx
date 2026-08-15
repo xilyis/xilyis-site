@@ -136,7 +136,7 @@ const renderContent = () => {
       
       <main 
         ref={mainContentRef}
-        className={`relative z-20 w-full min-h-screen flex flex-col items-center px-8 md:px-[10%] pt-16 ${isFixedView ? 'pb-16 h-screen overflow-hidden' : 'pb-12'}`}
+        className={`relative z-20 w-full min-h-screen flex flex-col items-center pt-16 ${isFixedView ? 'pb-16 h-screen overflow-hidden' : 'pb-12'}`}
       >
         {renderContent()}
       </main>
