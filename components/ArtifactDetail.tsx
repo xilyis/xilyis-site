@@ -6,14 +6,14 @@ interface ArtifactDetailProps {
   isDarkMode: boolean;
   artifactId: string;
   onBack?: () => void;
-  onNavigateToPage3?: (assetIndex: number) => void;
+  onAssetClick?: (assetIndex: number) => void;
 }
 
 const ArtifactDetail: React.FC<ArtifactDetailProps> = ({ 
   isDarkMode, 
   artifactId,
   onBack,
-  onNavigateToPage3 
+  onAssetClick 
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeThumbnailIndex, setActiveThumbnailIndex] = useState(0);
@@ -160,7 +160,7 @@ const ArtifactDetail: React.FC<ArtifactDetailProps> = ({
                 key={i}
                 onClick={() => {
                   if (isActive) {
-                    onNavigateToPage3?.(i);
+                    onAssetClick?.(i);
                   } else {
                     setActiveThumbnailIndex(i);
                   }
