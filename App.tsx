@@ -113,7 +113,7 @@ const renderContent = () => {
   const isFixedView = ['hero'].includes(currentView);
 
   return (
-<div className={`w-full px-4 md:px-6 lg:px-10 py-8 md:py-10 flex flex-col ${isDarkMode ? 'text-white bg-black' : 'text-black bg-white'}`}>
+<div className={`w-full flex flex-col ${isDarkMode ? 'text-white bg-black' : 'text-black bg-white'}`}>
       {/* Grain layer */}
       <div className="grain" />
       
@@ -136,7 +136,7 @@ const renderContent = () => {
       
       <main 
         ref={mainContentRef}
-        className={`relative z-20 w-full min-h-screen flex flex-col items-center pt-16 ${isFixedView ? 'pb-16 h-screen overflow-hidden' : 'pb-12'}`}
+        className={`relative z-20 w-full min-h-screen flex flex-col items-center px-[10px] md:px-[20px] pt-16 ${isFixedView ? 'pb-4 h-screen overflow-hidden' : 'pb-[10px]'}`}
       >
         {renderContent()}
       </main>
