@@ -286,13 +286,6 @@ const ArtifactDetail: React.FC<ArtifactDetailProps> = ({
         </div>
       </div>
 
-      {/* Mobile Navigation Hint */}
-      <div className="mt-3 md:hidden">
-        <div className="text-[7px] tracking-[0.15em] opacity-40 text-center">
-          TAP asset • ←→ to navigate
-        </div>
-      </div>
-
       {/*  FOOTER NAVIGATION  */}
       {onBack && (
         <div className={`flex justify-between items-center pt-4 mt-4 border-t ${
