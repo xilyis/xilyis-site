@@ -4,24 +4,11 @@ import { useGSAP } from '@gsap/react';
 
 interface ArtifactInfoProps {
   isDarkMode: boolean;
-  artifactId: string;
+  galleryMediaItems: GalleryMediaItem[];  // Pass gallery items from parent
+  currentGalleryMediaIndex: number;        // Which gallery item is active
+  onGalleryMediaChange?: (index: number) => void;  // Called when NEXT button pressed
   onBack?: () => void;
-  onNext?: (artifactId: string) => void;
-  onAssetClick?: (assetIndex: number) => void;
-}
-
-interface ArtifactEntry {
-  id: string;
-  label: string;
-  status: string;
-  timestamp: string;
-  thumbnail: string;
-  description: string;
-  sourceUrl: string;
-  downloadUrl?: string;
-  type: 'python' | 'web' | 'other';
-  media: string[];  // SUB-MEDIA items for this artifact
-  tabSections?: TabSection[];
+  onAssetClick?: (subMediaIndex: number) => void;
 }
 
 interface TabSection {
@@ -30,16 +17,21 @@ interface TabSection {
   content: string;
 }
 
-interface ExtendedArtifact extends ArtifactEntry {
-  detailedDescription?: string;
-  metadata?: Record<string, string>;
+interface GalleryMediaItem {
+  id: string;
+  label: string;
+  description: string;
+  media: string[];  // Sub-media for this gallery item
+  tabSections: TabSection[];
+  metadata: Record<string, string>;
 }
 
 const ArtifactInfo: React.FC<ArtifactInfoProps> = ({ 
   isDarkMode, 
-  artifactId,
+  galleryMediaItems,
+  currentGalleryMediaIndex,
+  onGalleryMediaChange,
   onBack,
-  onNext,
   onAssetClick 
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -48,75 +40,13 @@ const ArtifactInfo: React.FC<ArtifactInfoProps> = ({
   const [activeTab, setActiveTab] = useState('overview');
   const [showFullscreen, setShowFullscreen] = useState(false);
 
-  const entries: ExtendedArtifact[] = [
-    {
-      id: '01',
-      label: 'ENTRY 01',
-      status: 'ACTIVE',
-      timestamp: '2024.08.11',
-      thumbnail: '/assets/sacred-patterns-thumb.png',
-      description: 'Generative geometry with rotational symmetry',
-      detailedDescription: `This project explores generative geometry through rotational symmetry algorithms. The system creates intricate patterns by applying mathematical transformations to base geometric forms.
-
-The core algorithm utilizes polar coordinate systems to distribute elements radially, creating visually balanced compositions. Each iteration introduces subtle variations while maintaining overall structural harmony.
-
-Key features include:
-- Dynamic symmetry axes that respond to user input
-- Procedural pattern generation with seeded randomness
-- Color palette harmonization based on complementary theory
-- Export capabilities for high-resolution outputs
-
-The underlying Python implementation leverages numpy for efficient matrix operations and matplotlib for rendering. Performance optimizations allow real-time preview of parameter adjustments.
-
-Future iterations will incorporate machine learning models to predict aesthetically pleasing configurations based on user preferences and historical data.`,
-      sourceUrl: 'https://github.com/you/repo/blob/main/SacredPatterns.py',
-      downloadUrl: '/assets/sacred-patterns.png',
-      type: 'python',
-      media: ['/assets/sacred-patterns-1a.png', '/assets/sacred-patterns-1b.png', '/assets/sacred-patterns-1c.png'],
-      metadata: {
-        'Language': 'Python 3.11',
-        'Dependencies': 'numpy, matplotlib, pillow',
-        'License': 'MIT',
-        'Last Updated': '2024.08.11',
-        'Lines of Code': '1,247',
-        'Repository Size': '2.3 MB'
-      },
-      tabSections: [
-        { id: 'overview', label: 'OVERVIEW', content: `This project explores generative geometry through rotational symmetry algorithms. The system creates intricate patterns by applying mathematical transformations to base geometric forms.` },
-        { id: 'process', label: 'PROCESS', content: `The core algorithm utilizes polar coordinate systems to distribute elements radially, creating visually balanced compositions. Each iteration introduces subtle variations while maintaining overall structural harmony.` },
-        { id: 'tech', label: 'TECHNICAL', content: `The underlying Python implementation leverages numpy for efficient matrix operations and matplotlib for rendering. Performance optimizations allow real-time preview of parameter adjustments.` }
-      ]
-    },
-    {
-      id: '02',
-      label: 'ENTRY 02',
-      status: 'VER_2',
-      timestamp: '2024.03.15',
-      thumbnail: '/assets/default-placeholder.png',
-      description: 'Coming soon',
-      detailedDescription: 'Detailed description for Entry 02 will appear here.',
-      sourceUrl: '#',
-      type: 'python',
-      media: ['/assets/default-placeholder-a.png', '/assets/default-placeholder-b.png', '/assets/default-placeholder-c.png'],
-      metadata: {
-        'Status': 'Under Development',
-        'Version': '2.0'
-      },
-      tabSections: [
-        { id: 'overview', label: 'OVERVIEW', content: 'Entry 02 overview content.' },
-        { id: 'process', label: 'PROCESS', content: 'Entry 02 process details.' },
-        { id: 'tech', label: 'TECHNICAL', content: 'Entry 02 technical specifications.' }
-      ]
-    }
-  ];
-
-  const entry = entries.find(e => e.id === artifactId) || entries[0];
-  const subMedia = entry.media || [entry.thumbnail];
-  const currentMedia = subMedia[activeSubMediaIndex];
+  const currentGalleryMedia = galleryMediaItems[currentGalleryMediaIndex] || galleryMediaItems[0];
+  const subMedia = currentGalleryMedia.media || [];
+  const currentSubMedia = subMedia[activeSubMediaIndex];
 
   useEffect(() => {
-    setActiveSubMediaIndex(0);
-  }, [artifactId]);
+    setActiveSubMediaIndex(0);  // Reset sub-media when gallery item changes
+  }, [currentGalleryMediaIndex]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -140,7 +70,7 @@ Future iterations will incorporate machine learning models to predict aesthetica
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [showFullscreen, activeSubMediaIndex, subMedia.length, onBack]);
+  }, [showFullscreen, currentGalleryMediaIndex, galleryMediaItems.length, onBack]);
 
   useEffect(() => {
     if (showFullscreen) {
@@ -154,22 +84,18 @@ Future iterations will incorporate machine learning models to predict aesthetica
   }, [showFullscreen]);
 
   const handleNext = () => {
-    // Navigate to next ARTIFACT ENTRY
-    const currentIndex = entries.findIndex(e => e.id === artifactId);
-    const nextIndex = (currentIndex + 1) % entries.length;
-    
-    if (onNext) {
-      onNext(entries[nextIndex].id);
+    // Navigate to NEXT GALLERY MEDIA ITEM (NOT sub-media)
+    const nextIndex = (currentGalleryMediaIndex + 1) % galleryMediaItems.length;
+    if (onGalleryMediaChange) {
+      onGalleryMediaChange(nextIndex);
     }
   };
 
   const handlePrev = () => {
-    // Navigate to previous ARTIFACT ENTRY
-    const currentIndex = entries.findIndex(e => e.id === artifactId);
-    const prevIndex = (currentIndex - 1 + entries.length) % entries.length;
-    
-    if (onNext) {
-      onNext(entries[prevIndex].id);
+    // Navigate to PREVIOUS GALLERY MEDIA ITEM
+    const prevIndex = (currentGalleryMediaIndex - 1 + galleryMediaItems.length) % galleryMediaItems.length;
+    if (onGalleryMediaChange) {
+      onGalleryMediaChange(prevIndex);
     }
   };
 
@@ -196,17 +122,17 @@ Future iterations will incorporate machine learning models to predict aesthetica
           </button>
           
           <div className="relative w-full h-full flex items-center justify-center">
-            {currentMedia.endsWith('.mp4') || currentMedia.endsWith('.webm') ? (
+            {currentSubMedia.endsWith('.mp4') || currentSubMedia.endsWith('.webm') ? (
               <video
-                src={currentMedia}
+                src={currentSubMedia}
                 className="max-w-full max-h-full object-contain"
                 controls
                 autoPlay
               />
             ) : (
               <img
-                src={currentMedia}
-                alt={entry.label}
+                src={currentSubMedia}
+                alt={currentGalleryMedia.label}
                 className="max-w-full max-h-full object-contain"
               />
             )}
@@ -220,7 +146,7 @@ Future iterations will incorporate machine learning models to predict aesthetica
         {/* Header Row: ID + Fullscreen */}
         <div className="flex items-center justify-between mb-4">
           <div className="text-[7px] md:text-[8px] tracking-[0.2em] uppercase opacity-60">
-            ID: <span className="font-mono opacity-100">{entry.id}</span>
+            ID: <span className="font-mono opacity-100">{currentGalleryMedia.id}</span>
           </div>
           
           <button
@@ -237,9 +163,9 @@ Future iterations will incorporate machine learning models to predict aesthetica
           <div className={`relative w-full aspect-square max-h-[calc(100vh-200px)] 
             border ${isDarkMode ? 'border-zinc-800' : 'border-zinc-300'} overflow-hidden rounded-lg`}>
             
-            {currentMedia.endsWith('.mp4') || currentMedia.endsWith('.webm') ? (
+            {currentSubMedia.endsWith('.mp4') || currentSubMedia.endsWith('.webm') ? (
               <video
-                src={currentMedia}
+                src={currentSubMedia}
                 className="w-full h-full object-cover cursor-pointer"
                 loop
                 muted
@@ -252,8 +178,8 @@ Future iterations will incorporate machine learning models to predict aesthetica
               />
             ) : (
               <img
-                src={currentMedia}
-                alt={entry.label}
+                src={currentSubMedia}
+                alt={currentGalleryMedia.label}
                 className="w-full h-full object-cover cursor-pointer"
                 loading="lazy"
                 onClick={() => {
@@ -308,9 +234,9 @@ Future iterations will incorporate machine learning models to predict aesthetica
                 META DATA
               </span>
               
-              {/* Tab Buttons <1> */}
+              {/* Tab Buttons */}
               <div className="flex gap-2">
-                {entry.tabSections?.map(tab => (
+                {currentGalleryMedia.tabSections?.map(tab => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
@@ -348,7 +274,7 @@ Future iterations will incorporate machine learning models to predict aesthetica
             </h4>
             <div className={`prose prose-sm ${isDarkMode ? 'prose-invert' : ''} max-w-none`}>
               <p className="text-[7px] md:text-[8px] tracking-[0.15em] leading-relaxed opacity-70 whitespace-pre-line">
-                {entry.tabSections?.find(t => t.id === activeTab)?.content || entry.detailedDescription}
+                {currentGalleryMedia.tabSections?.find(t => t.id === activeTab)?.content || currentGalleryMedia.description}
               </p>
             </div>
           </div>
@@ -359,7 +285,7 @@ Future iterations will incorporate machine learning models to predict aesthetica
               SPECS
             </h4>
             <div className="space-y-2">
-              {entry.metadata && Object.entries(entry.metadata).map(([key, value], index) => (
+              {currentGalleryMedia.metadata && Object.entries(currentGalleryMedia.metadata).map(([key, value], index) => (
                 <div key={index} className="grid grid-cols-3 gap-2">
                   <span className="text-[7px] md:text-[8px] tracking-[0.2em] uppercase opacity-50">
                     {key}
