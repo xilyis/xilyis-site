@@ -85,17 +85,9 @@ const renderContent = () => {
           isDarkMode={isDarkMode}
           artifactId={selectedArtifactId}
           onBack={() => setActiveDetailView('detail')}
-          onNext={() => {
-            const entries = [
-              { id: '01' },
-              { id: '02' }
-            ];
-            const currentIndex = entries.findIndex(e => e.id === selectedArtifactId);
-            const nextIndex = (currentIndex + 1) % entries.length;
-            setSelectedArtifactId(entries[nextIndex].id);
-          }}
+          onNext={(newId) => setSelectedArtifactId(newId)}
           onAssetClick={(index: number) => {
-            console.log('Open fullscreen for asset index:', index);
+            console.log('Open fullscreen for sub-media index:', index);
           }}  
         />
       );
@@ -146,7 +138,7 @@ const renderContent = () => {
   }
 };
 
-  const isFixedView = ['hero'].includes(currentView);
+const isFixedView = ['hero'].includes(currentView);
 
   return (
 <div className={`w-full flex flex-col ${isDarkMode ? 'text-white bg-black' : 'text-black bg-white'}`}>

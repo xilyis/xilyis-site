@@ -6,8 +6,7 @@ interface ArtifactInfoProps {
   isDarkMode: boolean;
   artifactId: string;
   onBack?: () => void;
-  onNext?: () => void;
-  onFullscreenToggle?: () => void;
+  onNext?: (artifactId: string) => void;
   onAssetClick?: (assetIndex: number) => void;
 }
 
@@ -21,7 +20,14 @@ interface ArtifactEntry {
   sourceUrl: string;
   downloadUrl?: string;
   type: 'python' | 'web' | 'other';
-  media: string[];
+  media: string[];  // SUB-MEDIA items for this artifact
+  tabSections?: TabSection[];
+}
+
+interface TabSection {
+  id: string;
+  label: string;
+  content: string;
 }
 
 interface ExtendedArtifact extends ArtifactEntry {
@@ -34,12 +40,12 @@ const ArtifactInfo: React.FC<ArtifactInfoProps> = ({
   artifactId,
   onBack,
   onNext,
-  onFullscreenToggle,
   onAssetClick 
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [activeMediaIndex, setActiveMediaIndex] = useState(0);
+  const [activeSubMediaIndex, setActiveSubMediaIndex] = useState(0);
+  const [activeTab, setActiveTab] = useState('overview');
   const [showFullscreen, setShowFullscreen] = useState(false);
 
   const entries: ExtendedArtifact[] = [
@@ -66,7 +72,7 @@ Future iterations will incorporate machine learning models to predict aesthetica
       sourceUrl: 'https://github.com/you/repo/blob/main/SacredPatterns.py',
       downloadUrl: '/assets/sacred-patterns.png',
       type: 'python',
-      media: ['/assets/sacred-patterns-1.png', '/assets/sacred-patterns-2.png'],
+      media: ['/assets/sacred-patterns-1a.png', '/assets/sacred-patterns-1b.png', '/assets/sacred-patterns-1c.png'],
       metadata: {
         'Language': 'Python 3.11',
         'Dependencies': 'numpy, matplotlib, pillow',
@@ -74,7 +80,12 @@ Future iterations will incorporate machine learning models to predict aesthetica
         'Last Updated': '2024.08.11',
         'Lines of Code': '1,247',
         'Repository Size': '2.3 MB'
-      }
+      },
+      tabSections: [
+        { id: 'overview', label: 'OVERVIEW', content: `This project explores generative geometry through rotational symmetry algorithms. The system creates intricate patterns by applying mathematical transformations to base geometric forms.` },
+        { id: 'process', label: 'PROCESS', content: `The core algorithm utilizes polar coordinate systems to distribute elements radially, creating visually balanced compositions. Each iteration introduces subtle variations while maintaining overall structural harmony.` },
+        { id: 'tech', label: 'TECHNICAL', content: `The underlying Python implementation leverages numpy for efficient matrix operations and matplotlib for rendering. Performance optimizations allow real-time preview of parameter adjustments.` }
+      ]
     },
     {
       id: '02',
@@ -86,20 +97,25 @@ Future iterations will incorporate machine learning models to predict aesthetica
       detailedDescription: 'Detailed description for Entry 02 will appear here.',
       sourceUrl: '#',
       type: 'python',
-      media: ['/assets/default-placeholder.png'],
+      media: ['/assets/default-placeholder-a.png', '/assets/default-placeholder-b.png', '/assets/default-placeholder-c.png'],
       metadata: {
         'Status': 'Under Development',
         'Version': '2.0'
-      }
+      },
+      tabSections: [
+        { id: 'overview', label: 'OVERVIEW', content: 'Entry 02 overview content.' },
+        { id: 'process', label: 'PROCESS', content: 'Entry 02 process details.' },
+        { id: 'tech', label: 'TECHNICAL', content: 'Entry 02 technical specifications.' }
+      ]
     }
   ];
 
   const entry = entries.find(e => e.id === artifactId) || entries[0];
-  const media = entry.media || [entry.thumbnail];
-  const currentMedia = media[activeMediaIndex];
+  const subMedia = entry.media || [entry.thumbnail];
+  const currentMedia = subMedia[activeSubMediaIndex];
 
   useEffect(() => {
-    setActiveMediaIndex(0);
+    setActiveSubMediaIndex(0);
   }, [artifactId]);
 
   useEffect(() => {
@@ -124,92 +140,57 @@ Future iterations will incorporate machine learning models to predict aesthetica
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [showFullscreen, activeMediaIndex, media.length, onBack]);
-
-  useGSAP(() => {
-    const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
-    
-    tl.from('.info-container', { 
-      opacity: 0, 
-      y: 20, 
-      duration: 0.6 
-    })
-      .from('.media-panel', { 
-        x: -30, 
-        opacity: 0, 
-        duration: 0.5 
-      }, '-=0.3')
-      .from('.detail-panel', { 
-        x: 30, 
-        opacity: 0, 
-        duration: 0.5 
-      }, '-=0.3')
-      .from('.meta-data-item', { 
-        y: 10, 
-        opacity: 0, 
-        stagger: 0.05, 
-        duration: 0.4 
-      }, '-=0.2');
-  }, { scope: containerRef });
+  }, [showFullscreen, activeSubMediaIndex, subMedia.length, onBack]);
 
   useEffect(() => {
-    const tl = gsap.timeline();
-    
     if (showFullscreen) {
       document.body.style.overflow = 'hidden';
-      tl.to('.fullscreen-overlay', {
-        opacity: 1,
-        visibility: 'visible',
-        duration: 0.3
-      });
     } else {
       document.body.style.overflow = '';
-      tl.to('.fullscreen-overlay', {
-        opacity: 0,
-        visibility: 'hidden',
-        duration: 0.3
-      });
     }
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, [showFullscreen]);
 
   const handleNext = () => {
+    // Navigate to next ARTIFACT ENTRY
+    const currentIndex = entries.findIndex(e => e.id === artifactId);
+    const nextIndex = (currentIndex + 1) % entries.length;
+    
     if (onNext) {
-      onNext();
-    } else {
-      setActiveMediaIndex(prev => (prev + 1) % media.length);
+      onNext(entries[nextIndex].id);
     }
   };
 
   const handlePrev = () => {
-    setActiveMediaIndex(prev => (prev - 1 + media.length) % media.length);
+    // Navigate to previous ARTIFACT ENTRY
+    const currentIndex = entries.findIndex(e => e.id === artifactId);
+    const prevIndex = (currentIndex - 1 + entries.length) % entries.length;
+    
+    if (onNext) {
+      onNext(entries[prevIndex].id);
+    }
   };
 
   const handleFullscreenToggle = () => {
     setShowFullscreen(prev => !prev);
-    onFullscreenToggle?.();
-  };
-
-  const scrollToBottom = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTo({
-        top: scrollContainerRef.current.scrollHeight,
-        behavior: 'smooth'
-      });
-    }
   };
 
   return (
     <div ref={containerRef} className={`w-full h-screen flex ${isDarkMode ? 'text-white bg-black' : 'text-black bg-white'}`}>
       
       {/* Fullscreen Overlay */}
-      <div className={`fullscreen-overlay fixed inset-0 z-50 ${
+      <div className={`fixed inset-0 z-50 ${
         isDarkMode ? 'bg-black/95' : 'bg-white/95'
-      } transition-all duration-300 opacity-0 visibility-hidden flex items-center justify-center`}>
-        <div className="relative w-full h-full p-4 md:p-8">
+      } flex items-center justify-center transition-opacity duration-300 ${
+        showFullscreen ? 'opacity-100 visible' : 'opacity-0 invisible'
+      }`}>
+        <div className="relative w-full h-full pt-16 md:pt-20 p-4 md:p-8">
           <button
             onClick={handleFullscreenToggle}
-            className={`absolute top-20 right-10 z-50 text-[7px] md:text-[8px] tracking-[0.2em] uppercase 
-              opacity-50 hover:opacity-100 transition-all ${isDarkMode ? 'text-white' : 'text-black'}`}
+            className={`absolute top-20 right-10 z-50 text-[7px] md:text-[8px] tracking-[0.2em] uppercase
+                opacity-50 hover:opacity-100 transition-all ${isDarkMode ? 'text-white' : 'text-black'}`}
           >
             [ CLOSE FULLSCREEN ]
           </button>
@@ -234,12 +215,12 @@ Future iterations will incorporate machine learning models to predict aesthetica
       </div>
 
       {/* Left Panel - Media Display */}
-      <div className="media-panel flex-1 flex flex-col p-4 md:p-6 lg:p-10 border-r border-zinc-800">
+      <div className="flex-1 flex flex-col p-4 md:p-6 lg:p-10 border-r border-zinc-800">
         
-        {/* Header Row */}
+        {/* Header Row: ID + Fullscreen */}
         <div className="flex items-center justify-between mb-4">
           <div className="text-[7px] md:text-[8px] tracking-[0.2em] uppercase opacity-60">
-            ID NO: <span className="font-mono opacity-100">{entry.id}</span>
+            ID: <span className="font-mono opacity-100">{entry.id}</span>
           </div>
           
           <button
@@ -247,17 +228,17 @@ Future iterations will incorporate machine learning models to predict aesthetica
             className={`text-[7px] md:text-[8px] tracking-[0.2em] uppercase transition-all duration-300 
               opacity-50 hover:opacity-100 ${isDarkMode ? 'text-white' : 'text-black'}`}
           >
-            [1] FULLSCREEN
+            FULLSCREEN
           </button>
         </div>
 
         {/* Media Display Area */}
         <div className="flex-1 flex items-center justify-center relative min-h-0">
-        <div className={`relative w-full aspect-square max-h-[calc(100vh-200px)] 
+          <div className={`relative w-full aspect-square max-h-[calc(100vh-200px)] 
             border ${isDarkMode ? 'border-zinc-800' : 'border-zinc-300'} overflow-hidden rounded-lg`}>
             
             {currentMedia.endsWith('.mp4') || currentMedia.endsWith('.webm') ? (
-            <video
+              <video
                 src={currentMedia}
                 className="w-full h-full object-cover cursor-pointer"
                 loop
@@ -265,84 +246,121 @@ Future iterations will incorporate machine learning models to predict aesthetica
                 playsInline
                 autoPlay
                 onClick={() => {
-                handleFullscreenToggle();
-                onAssetClick?.(activeMediaIndex);
+                  handleFullscreenToggle();
+                  onAssetClick?.(activeSubMediaIndex);
                 }}
-            />
+              />
             ) : (
-            <img
+              <img
                 src={currentMedia}
                 alt={entry.label}
                 className="w-full h-full object-cover cursor-pointer"
                 loading="lazy"
                 onClick={() => {
-                handleFullscreenToggle();
-                onAssetClick?.(activeMediaIndex);
+                  handleFullscreenToggle();
+                  onAssetClick?.(activeSubMediaIndex);
                 }}
-            />
+              />
             )}
 
             {/* Hover overlay */}
             <div className={`absolute inset-0 ${isDarkMode ? 'bg-black/20' : 'bg-white/20'} 
-                invisible hover:visible transition-all duration-300 flex items-center justify-center`}>
-            <span className="text-[7px] md:text-[8px] tracking-[0.2em] uppercase font-mono opacity-90">
+              invisible hover:visible transition-all duration-300 flex items-center justify-center`}>
+              <span className="text-[7px] md:text-[8px] tracking-[0.2em] uppercase font-mono opacity-90">
                 [ CLICK FOR FULLSCREEN ]
-            </span>
+              </span>
             </div>
-        </div>
+          </div>
         </div>
 
-        {/* Slide Title */}
-        <div className="mt-4 text-center">
-          <h2 className="text-[1rem] md:text-[1.25rem] lg:text-[1.5rem] font-[100] uppercase tracking-[0.1em]">
-            {entry.label}
-          </h2>
+        {/* Sub-Media Count + Thumbnail Strip */}
+        <div className="mt-4">
+          <div className="text-[7px] md:text-[8px] tracking-[0.2em] uppercase opacity-40 mb-2">
+            MEDIA {activeSubMediaIndex + 1}/{subMedia.length}
+          </div>
+          
+          <div className="flex gap-2 overflow-x-auto scrollbar-thin pb-2">
+            {subMedia.map((src, i) => (
+              <button
+                key={i}
+                onClick={() => setActiveSubMediaIndex(i)}
+                className={`flex-shrink-0 w-24 h-16 rounded border transition-all ${
+                  i === activeSubMediaIndex
+                    ? `${isDarkMode ? 'border-white' : 'border-black'} opacity-100`
+                    : `${isDarkMode ? 'border-zinc-800' : 'border-zinc-300'} opacity-50 hover:opacity-100`
+                }`}
+              >
+                <img src={src} className="w-full h-full object-cover rounded" alt="" />
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Right Panel - Details & Metadata */}
-      <div className="detail-panel flex-1 flex flex-col">
+      {/* Right Panel - Info Content */}
+      <div className="flex-1 flex flex-col">
         
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 md:p-6 border-b border-zinc-800">
-          <h3 className="text-[7px] md:text-[8px] tracking-[0.4em] uppercase opacity-60">
-            META DATA
-          </h3>
-          
-          {onBack && (
-            <button
-              onClick={onBack}
-              className={`text-[7px] md:text-[8px] tracking-[0.2em] uppercase transition-all duration-300 
-                opacity-50 hover:opacity-100 ${isDarkMode ? 'text-white' : 'text-black'}`}
-            >
-              ‹ BACK
-            </button>
-          )}
+        {/* Top Row: Meta Data + Tabs + Back */}
+        <div className="p-4 md:p-6 border-b border-zinc-800">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-4">
+              <span className={`text-[7px] md:text-[8px] tracking-[0.4em] uppercase ${isDarkMode ? 'opacity-60' : 'opacity-70'}`}>
+                META DATA
+              </span>
+              
+              {/* Tab Buttons <1> */}
+              <div className="flex gap-2">
+                {entry.tabSections?.map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`text-[7px] tracking-[0.2em] uppercase px-3 py-1 transition-all border-b-2 ${
+                      activeTab === tab.id
+                        ? `${isDarkMode ? 'border-white opacity-100' : 'border-black opacity-100'}`
+                        : `${isDarkMode ? 'border-transparent opacity-50' : 'border-transparent opacity-50'} hover:opacity-100`
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            {onBack && (
+              <button
+                onClick={onBack}
+                className={`text-[7px] md:text-[8px] tracking-[0.2em] uppercase transition-all duration-300 
+                  opacity-50 hover:opacity-100 ${isDarkMode ? 'text-white' : 'text-black'}`}
+              >
+                ‹ BACK
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Scrollable Description Section */}
-        <div ref={scrollContainerRef} className={`detail-scroll flex-1 overflow-y-auto p-4 md:p-6 
+        <div ref={scrollContainerRef} className={`flex-1 overflow-y-auto p-4 md:p-6 
           scrollbar-thin ${isDarkMode ? 'scrollbar-thumb-zinc-700' : 'scrollbar-thumb-zinc-300'}`}>
           
           <div className="mb-6">
             <h4 className="text-[7px] md:text-[8px] tracking-[0.3em] uppercase opacity-60 mb-3">
-              [3] DESCRIPTION
+              DESCRIPTION
             </h4>
             <div className={`prose prose-sm ${isDarkMode ? 'prose-invert' : ''} max-w-none`}>
               <p className="text-[7px] md:text-[8px] tracking-[0.15em] leading-relaxed opacity-70 whitespace-pre-line">
-                {entry.detailedDescription}
+                {entry.tabSections?.find(t => t.id === activeTab)?.content || entry.detailedDescription}
               </p>
             </div>
           </div>
 
-          {/* Metadata Grid */}
+          {/* Static Technical Specs */}
           <div className="border-t border-zinc-800 pt-6">
             <h4 className="text-[7px] md:text-[8px] tracking-[0.3em] uppercase opacity-60 mb-3">
-              TECHNICAL SPECS
+              SPECS
             </h4>
             <div className="space-y-2">
               {entry.metadata && Object.entries(entry.metadata).map(([key, value], index) => (
-                <div key={index} className="grid grid-cols-3 gap-2 meta-data-item">
+                <div key={index} className="grid grid-cols-3 gap-2">
                   <span className="text-[7px] md:text-[8px] tracking-[0.2em] uppercase opacity-50">
                     {key}
                   </span>
@@ -353,45 +371,24 @@ Future iterations will incorporate machine learning models to predict aesthetica
               ))}
             </div>
           </div>
-
-        {/* Scroll indicator */}
-        <div className="text-center py-4 text-[7px] md:text-[8px] tracking-[0.2em] uppercase opacity-40">
-            <span>[2] SCROLL DOWN</span>
-        </div>
         </div>
 
-        {/* Navigation Footer */}
-        <div className="p-4 md:p-6 border-t border-zinc-800 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-                <span className="text-[7px] md:text-[8px] tracking-[0.2em] uppercase opacity-40">
-                MEDIA {activeMediaIndex + 1}/{media.length}
-                </span>
-                {entry.sourceUrl && entry.sourceUrl !== '#' && (
-                <a 
-                    href={entry.sourceUrl}
-                    target="_blank"
-                rel="noopener noreferrer"
-                className="text-[7px] md:text-[8px] tracking-[0.2em] uppercase opacity-60 hover:opacity-100 border border-current/20 px-3 py-1.5 transition-all"
-                >
-                ↗ VISIT
-                </a>
-                )
-            }
-            </div>
-            
+        {/* Footer: Navigation Button */}
+        <div className="p-4 md:p-6 border-t border-zinc-800">
+          <div className="flex items-center justify-end">
             <button
-                onClick={handleNext}
-                disabled={!onNext && media.length <= 1}
-                className={`text-[7px] md:text-[8px] tracking-[0.2em] uppercase transition-all duration-300 
+              onClick={handleNext}
+              className={`text-[7px] md:text-[8px] tracking-[0.2em] uppercase transition-all duration-300 
                 px-4 py-2 border ${
                 isDarkMode 
-                    ? 'border-white/20 hover:border-white/40 opacity-60 hover:opacity-100' 
-                    : 'border-black/20 hover:border-black/40 opacity-60 hover:opacity-100'
-                } disabled:opacity-30 disabled:cursor-not-allowed`}
+                  ? 'border-white/20 hover:border-white/40 opacity-60 hover:opacity-100' 
+                  : 'border-black/20 hover:border-black/40 opacity-60 hover:opacity-100'
+              }`}
             >
-                [4] NEXT →
+              NEXT →
             </button>
-            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
