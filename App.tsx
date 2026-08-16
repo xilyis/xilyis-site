@@ -4,6 +4,7 @@ import Hero from './components/Hero';
 import About from './components/About';
 import Artifacts from './components/Artifacts';
 import ArtifactDetail from './components/ArtifactDetail';
+import ArtifactInfo from './components/ArtifactInfo';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import gsap from 'gsap';
