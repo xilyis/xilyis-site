@@ -21,6 +21,7 @@ interface ArtifactEntry {
   sourceUrl: string;
   downloadUrl?: string;
   type: 'python' | 'web' | 'other';
+  media: string[];
 }
 
 interface ExtendedArtifact extends ArtifactEntry {
