@@ -19,12 +19,14 @@ interface ArtifactsProps {
   onNavigate?: (view: 'hero' | 'about' | 'artifacts' | 'contact') => 
 void;
   onNavigateToDetail?: (artifactId: string) => void;
+  onNavigateToInfo?: (artifactId: string) => void;
 }
 
 const Artifacts: React.FC<ArtifactsProps> = ({ 
   isDarkMode, 
   onNavigate,
-onNavigateToDetail
+onNavigateToDetail,
+onNavigateToInfo
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [selectedEntry, setSelectedEntry] = useState(0);
@@ -136,11 +138,12 @@ onNavigateToDetail
         <div className="flex gap-2 mt-3">
           {entries[selectedEntry].downloadUrl && entries[selectedEntry].downloadUrl !== '#' && (
             <a 
-              href={entries[selectedEntry].downloadUrl}
-              download
+              href={entries[selectedEntry].sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-[7px] tracking-[0.2em] uppercase opacity-60 hover:opacity-100 border border-current/20 px-3 py-1.5 transition-all"
             >
-              ↓ DOWNLOAD
+              ↗ VISIT
             </a>
           )}
          {/* VIEW button */}
