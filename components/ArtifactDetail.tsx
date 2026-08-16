@@ -255,11 +255,12 @@ const ArtifactDetail: React.FC<ArtifactDetailProps> = ({
         <div className="detail-actions flex justify-center gap-3 items-end">
           {entry.downloadUrl && entry.downloadUrl !== '#' && (
             <a 
-              href={entry.downloadUrl}
-              download
+              href={entry.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-[7px] md:text-[8px] tracking-[0.2em] uppercase opacity-60 hover:opacity-100 border border-current/20 px-3 py-1.5 transition-all"
             >
-              ↓ DOWNLOAD
+              ↗ VISIT
             </a>
           )}
           
