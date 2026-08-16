@@ -7,13 +7,15 @@ interface ArtifactDetailProps {
   artifactId: string;
   onBack?: () => void;
   onAssetClick?: (assetIndex: number) => void;
+  onNavigateToInfo?: (artifactId: string) => void;
 }
 
 const ArtifactDetail: React.FC<ArtifactDetailProps> = ({ 
   isDarkMode, 
   artifactId,
   onBack,
-  onAssetClick 
+  onAssetClick,
+  onNavigateToInfo
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeThumbnailIndex, setActiveThumbnailIndex] = useState(0);
@@ -261,14 +263,13 @@ const ArtifactDetail: React.FC<ArtifactDetailProps> = ({
             </a>
           )}
           
-          <a 
-            href={entry.sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={() => onNavigateToInfo?.
+              (entry.id)}
             className="text-[7px] md:text-[8px] tracking-[0.2em] uppercase opacity-60 hover:opacity-100 border border-current/20 px-3 py-1.5 transition-all"
           >
-            VIEW
-          </a>
+            INFO
+          </button>
         </div>
 
         {/* Date/Time */}

@@ -19,12 +19,14 @@ interface ArtifactsProps {
   onNavigate?: (view: 'hero' | 'about' | 'artifacts' | 'contact') => 
 void;
   onNavigateToDetail?: (artifactId: string) => void;
+  onNavigateToInfo?: (artifactId: string) => void;
 }
 
 const Artifacts: React.FC<ArtifactsProps> = ({ 
   isDarkMode, 
   onNavigate,
-onNavigateToDetail
+onNavigateToDetail,
+onNavigateToInfo
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [selectedEntry, setSelectedEntry] = useState(0);
