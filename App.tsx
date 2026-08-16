@@ -77,44 +77,71 @@ const App: React.FC = () => {
 
   
 const renderContent = () => {
-    if (currentView === 'artifacts' && selectedArtifactId) {
+  if (currentView === 'artifacts' && selectedArtifactId) {
+    if (activeDetailView === 'info') {
       return (
-        <ArtifactDetail 
+        <ArtifactInfo 
           isDarkMode={isDarkMode}
           artifactId={selectedArtifactId}
-          onBack={() => {
-            setActiveDetailView(null);
-            setSelectedArtifactId(undefined);
+          onBack={() => setActiveDetailView('detail')}
+          onNext={() => {
+            const entries = [
+              { id: '01' },
+              { id: '02' }
+            ];
+            const currentIndex = entries.findIndex(e => e.id === selectedArtifactId);
+            const nextIndex = (currentIndex + 1) % entries.length;
+            setSelectedArtifactId(entries[nextIndex].id);
           }}
-          onNavigateToInfo={(id) => setActiveDetailView('info')}
-          onAssetClick={(index) => {
-            console.log('Open asset expanded view for index:', index);
-          }}
+          onAssetClick={(index) => console.log('Open fullscreen:', index)}
         />
       );
     }
 
-    switch (currentView) {
-      case 'hero':
-        return <Hero isDarkMode={isDarkMode} onNavigate={navigateTo} />;
-      case 'about':
-        return <About isDarkMode={isDarkMode} onNavigate={navigateTo} />;
-      case 'artifacts':
-        return (
-          <Artifacts 
-            isDarkMode={isDarkMode}
-            onNavigate={navigateTo}
-            onNavigateToDetail={(id) => setSelectedArtifactId(id)}  // NEW
-            onNavigateToInfo={(id) => setActiveDetailView('info')}
-          />
-        );
-      case 'contact':
-        return <Contact isDarkMode={isDarkMode} />;
-      default:
-        const _exhaustiveCheck: never = currentView;
-        return null;
-    }
-  };
+    return (
+      <ArtifactDetail 
+        isDarkMode={isDarkMode}
+        artifactId={selectedArtifactId}
+        onBack={() => {
+          setActiveDetailView(null);
+          setSelectedArtifactId(undefined);
+        }}
+        onNavigateToInfo={(id) => {
+          setSelectedArtifactId(id);
+          setActiveDetailView('info');
+        }}
+        onAssetClick={(index) => console.log('Open asset expanded:', index)}
+      />
+    );
+  }
+
+  switch (currentView) {
+    case 'hero':
+      return <Hero isDarkMode={isDarkMode} onNavigate={navigateTo} />;
+    case 'about':
+      return <About isDarkMode={isDarkMode} onNavigate={navigateTo} />;
+    case 'artifacts':
+      return (
+        <Artifacts 
+          isDarkMode={isDarkMode}
+          onNavigate={navigateTo}
+          onNavigateToDetail={(id) => {
+            setSelectedArtifactId(id);
+            setActiveDetailView('detail');
+          }}
+          onNavigateToInfo={(id) => {
+            setSelectedArtifactId(id);
+            setActiveDetailView('info');
+          }}
+        />
+      );
+    case 'contact':
+      return <Contact isDarkMode={isDarkMode} />;
+    default:
+      const _exhaustiveCheck: never = currentView;
+      return null;
+  }
+};
 
   const isFixedView = ['hero'].includes(currentView);
 
