@@ -11,6 +11,18 @@ interface ArtifactInfoProps {
   onAssetClick?: (assetIndex: number) => void;
 }
 
+interface ArtifactEntry {
+  id: string;
+  label: string;
+  status: string;
+  timestamp: string;
+  thumbnail: string;
+  description: string;
+  sourceUrl: string;
+  downloadUrl?: string;
+  type: 'python' | 'web' | 'other';
+}
+
 interface ExtendedArtifact extends ArtifactEntry {
   detailedDescription?: string;
   metadata?: Record<string, string>;
