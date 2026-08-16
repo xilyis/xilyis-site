@@ -10,13 +10,14 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 
 type View = 'hero' | 'about' | 'artifacts' | 'contact';
+type DetailView = 'detail' | 'info' | null;
 
 const App: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [currentView, setCurrentView] = useState<View>('hero');
   const [selectedArtifactId, setSelectedArtifactId] = useState<string>();  // NEW
-  
+  const [activeDetailView, setActiveDetailView] = useState<DetailView>(null);
   const leftLineRef = useRef<HTMLDivElement>(null);
   const rightLineRef = useRef<HTMLDivElement>(null);
   const mainContentRef = useRef<HTMLDivElement>(null);
@@ -81,7 +82,11 @@ const renderContent = () => {
         <ArtifactDetail 
           isDarkMode={isDarkMode}
           artifactId={selectedArtifactId}
-          onBack={goBackFromDetail}
+          onBack={() => {
+            setActiveDetailView(null);
+            setSelectedArtifactId(undefined);
+          }}
+          onNavigateToInfo={(id) => setActiveDetailView('info')}
           onAssetClick={(index) => {
             console.log('Open asset expanded view for index:', index);
           }}
@@ -100,6 +105,7 @@ const renderContent = () => {
             isDarkMode={isDarkMode}
             onNavigate={navigateTo}
             onNavigateToDetail={(id) => setSelectedArtifactId(id)}  // NEW
+            onNavigateToInfo={(id) => setActiveDetailView('info')}
           />
         );
       case 'contact':
