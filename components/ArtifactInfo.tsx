@@ -354,23 +354,36 @@ Future iterations will incorporate machine learning models to predict aesthetica
 
         {/* Navigation Footer */}
         <div className="p-4 md:p-6 border-t border-zinc-800 flex items-center justify-between">
-          <div className="text-[7px] md:text-[8px] tracking-[0.2em] uppercase opacity-40">
-            MEDIA {activeMediaIndex + 1}/{media.length}
-          </div>
-          
-          <button
-            onClick={handleNext}
-            disabled={!onNext && media.length <= 1}
-            className={`text-[7px] md:text-[8px] tracking-[0.2em] uppercase transition-all duration-300 
-              px-4 py-2 border ${
-              isDarkMode 
-                ? 'border-white/20 hover:border-white/40 opacity-60 hover:opacity-100' 
-                : 'border-black/20 hover:border-black/40 opacity-60 hover:opacity-100'
-            } disabled:opacity-30 disabled:cursor-not-allowed`}
-          >
-            [4] NEXT →
-          </button>
-        </div>
+            <div className="flex items-center gap-3">
+                <span className="text-[7px] md:text-[8px] tracking-[0.2em] uppercase opacity-40">
+                MEDIA {activeMediaIndex + 1}/{media.length}
+                </span>
+                {entry.sourceUrl && entry.sourceUrl !== '#' && (
+                <a 
+                    href={entry.sourceUrl}
+                    target="_blank"
+                rel="noopener noreferrer"
+                className="text-[7px] md:text-[8px] tracking-[0.2em] uppercase opacity-60 hover:opacity-100 border border-current/20 px-3 py-1.5 transition-all"
+                >
+                ↗ VISIT
+                </a>
+                )
+            }
+            </div>
+            
+            <button
+                onClick={handleNext}
+                disabled={!onNext && media.length <= 1}
+                className={`text-[7px] md:text-[8px] tracking-[0.2em] uppercase transition-all duration-300 
+                px-4 py-2 border ${
+                isDarkMode 
+                    ? 'border-white/20 hover:border-white/40 opacity-60 hover:opacity-100' 
+                    : 'border-black/20 hover:border-black/40 opacity-60 hover:opacity-100'
+                } disabled:opacity-30 disabled:cursor-not-allowed`}
+            >
+                [4] NEXT →
+            </button>
+            </div>
       </div>
     </div>
   );
