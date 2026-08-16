@@ -94,7 +94,9 @@ const renderContent = () => {
             const nextIndex = (currentIndex + 1) % entries.length;
             setSelectedArtifactId(entries[nextIndex].id);
           }}
-          onAssetClick={(index) => console.log('Open fullscreen:', index)}
+          onAssetClick={(index: number) => {
+            console.log('Open fullscreen for asset index:', index);
+          }}  
         />
       );
     }

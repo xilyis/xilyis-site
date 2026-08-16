@@ -253,35 +253,43 @@ Future iterations will incorporate machine learning models to predict aesthetica
 
         {/* Media Display Area */}
         <div className="flex-1 flex items-center justify-center relative min-h-0">
-          <div className={`relative w-full aspect-square max-h-[calc(100vh-200px)] 
+        <div className={`relative w-full aspect-square max-h-[calc(100vh-200px)] 
             border ${isDarkMode ? 'border-zinc-800' : 'border-zinc-300'} overflow-hidden rounded-lg`}>
             
             {currentMedia.endsWith('.mp4') || currentMedia.endsWith('.webm') ? (
-              <video
+            <video
                 src={currentMedia}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover cursor-pointer"
                 loop
                 muted
                 playsInline
                 autoPlay
-              />
+                onClick={() => {
+                handleFullscreenToggle();
+                onAssetClick?.(activeMediaIndex);
+                }}
+            />
             ) : (
-              <img
+            <img
                 src={currentMedia}
                 alt={entry.label}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover cursor-pointer"
                 loading="lazy"
-              />
+                onClick={() => {
+                handleFullscreenToggle();
+                onAssetClick?.(activeMediaIndex);
+                }}
+            />
             )}
 
-            {/* Click hint overlay */}
+            {/* Hover overlay */}
             <div className={`absolute inset-0 ${isDarkMode ? 'bg-black/20' : 'bg-white/20'} 
-              opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none`}>
-              <span className="text-[7px] md:text-[8px] tracking-[0.2em] uppercase font-mono opacity-90">
+                invisible hover:visible transition-all duration-300 flex items-center justify-center`}>
+            <span className="text-[7px] md:text-[8px] tracking-[0.2em] uppercase font-mono opacity-90">
                 [ CLICK FOR FULLSCREEN ]
-              </span>
+            </span>
             </div>
-          </div>
+        </div>
         </div>
 
         {/* Slide Title */}
