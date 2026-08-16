@@ -208,7 +208,7 @@ Future iterations will incorporate machine learning models to predict aesthetica
         <div className="relative w-full h-full p-4 md:p-8">
           <button
             onClick={handleFullscreenToggle}
-            className={`absolute top-4 right-4 z-50 text-[7px] md:text-[8px] tracking-[0.2em] uppercase 
+            className={`absolute top-20 right-10 z-50 text-[7px] md:text-[8px] tracking-[0.2em] uppercase 
               opacity-50 hover:opacity-100 transition-all ${isDarkMode ? 'text-white' : 'text-black'}`}
           >
             [ CLOSE FULLSCREEN ]
