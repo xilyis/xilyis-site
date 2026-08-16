@@ -346,11 +346,10 @@ Future iterations will incorporate machine learning models to predict aesthetica
             </div>
           </div>
 
-          {/* Scroll indicator */}
-          <div className={`text-center py-4 text-[7px] md:text-[8px] tracking-[0.2em] uppercase 
-            opacity-40 transition-opacity duration-300 ${showScrollbar ? 'opacity-40' : 'opacity-0'}`}>
+        {/* Scroll indicator */}
+        <div className="text-center py-4 text-[7px] md:text-[8px] tracking-[0.2em] uppercase opacity-40">
             <span>[2] SCROLL DOWN</span>
-          </div>
+        </div>
         </div>
 
         {/* Navigation Footer */}
