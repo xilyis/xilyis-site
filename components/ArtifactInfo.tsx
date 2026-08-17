@@ -4,9 +4,9 @@ import { useGSAP } from '@gsap/react';
 
 interface ArtifactInfoProps {
   isDarkMode: boolean;
-  galleryMediaItems: GalleryMediaItem[];  // Pass gallery items from parent
-  currentGalleryMediaIndex: number;        // Which gallery item is active
-  onGalleryMediaChange?: (index: number) => void;  // Called when NEXT button pressed
+  galleryMediaItems: GalleryMediaItem[];
+  currentGalleryMediaIndex: number;
+  onGalleryMediaChange?: (index: number) => void;
   onBack?: () => void;
   onAssetClick?: (subMediaIndex: number) => void;
 }
@@ -21,21 +21,21 @@ interface GalleryMediaItem {
   id: string;
   label: string;
   description: string;
-  media: string[];  // Sub-media for this gallery item
+  media: string[];
   tabSections: TabSection[];
   metadata: Record<string, string>;
 }
 
-const ArtifactInfo: React.FC<ArtifactInfoProps> = ({ 
-  isDarkMode, 
+const ArtifactInfo: React.FC<ArtifactInfoProps> = ({
+  isDarkMode,
   galleryMediaItems,
   currentGalleryMediaIndex,
   onGalleryMediaChange,
   onBack,
-  onAssetClick 
+  onAssetClick
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const descScrollRef = useRef<HTMLDivElement>(null);
   const [activeSubMediaIndex, setActiveSubMediaIndex] = useState(0);
   const [activeTab, setActiveTab] = useState('overview');
   const [showFullscreen, setShowFullscreen] = useState(false);
@@ -45,7 +45,7 @@ const ArtifactInfo: React.FC<ArtifactInfoProps> = ({
   const currentSubMedia = subMedia[activeSubMediaIndex];
 
   useEffect(() => {
-    setActiveSubMediaIndex(0);  // Reset sub-media when gallery item changes
+    setActiveSubMediaIndex(0);
   }, [currentGalleryMediaIndex]);
 
   useEffect(() => {
@@ -84,7 +84,6 @@ const ArtifactInfo: React.FC<ArtifactInfoProps> = ({
   }, [showFullscreen]);
 
   const handleNext = () => {
-    // Navigate to NEXT GALLERY MEDIA ITEM (NOT sub-media)
     const nextIndex = (currentGalleryMediaIndex + 1) % galleryMediaItems.length;
     if (onGalleryMediaChange) {
       onGalleryMediaChange(nextIndex);
@@ -92,7 +91,6 @@ const ArtifactInfo: React.FC<ArtifactInfoProps> = ({
   };
 
   const handlePrev = () => {
-    // Navigate to PREVIOUS GALLERY MEDIA ITEM
     const prevIndex = (currentGalleryMediaIndex - 1 + galleryMediaItems.length) % galleryMediaItems.length;
     if (onGalleryMediaChange) {
       onGalleryMediaChange(prevIndex);
@@ -103,9 +101,20 @@ const ArtifactInfo: React.FC<ArtifactInfoProps> = ({
     setShowFullscreen(prev => !prev);
   };
 
+  // GSAP animations
+  useGSAP(() => {
+    const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
+
+    tl.from('.info-header', { y: -20, opacity: 0, duration: 0.6 })
+      .from('.info-meta-top', { x: -15, opacity: 0, duration: 0.5, stagger: 0.08 }, '-=0.4')
+      .from('.info-description', { y: 10, opacity: 0, duration: 0.5 }, '-=0.3')
+      .from('.info-specs', { y: 15, opacity: 0, duration: 0.5 }, '-=0.4')
+      .from('.info-nav', { opacity: 0, y: 10, duration: 0.4 }, '-=0.2');
+  }, { scope: containerRef });
+
   return (
     <div ref={containerRef} className={`w-full h-screen flex ${isDarkMode ? 'text-white bg-black' : 'text-black bg-white'}`}>
-      
+
       {/* Fullscreen Overlay */}
       <div className={`fixed inset-0 z-50 ${
         isDarkMode ? 'bg-black/95' : 'bg-white/95'
@@ -120,7 +129,7 @@ const ArtifactInfo: React.FC<ArtifactInfoProps> = ({
           >
             [ CLOSE FULLSCREEN ]
           </button>
-          
+
           <div className="relative w-full h-full flex items-center justify-center">
             {currentSubMedia.endsWith('.mp4') || currentSubMedia.endsWith('.webm') ? (
               <video
@@ -140,179 +149,224 @@ const ArtifactInfo: React.FC<ArtifactInfoProps> = ({
         </div>
       </div>
 
-      {/* Left Panel - Media Display */}
-      <div className="flex-1 flex flex-col p-4 md:p-6 lg:p-10 border-r border-zinc-800">
-        
-        {/* Header Row: ID + Fullscreen */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="text-[7px] md:text-[8px] tracking-[0.2em] uppercase opacity-60">
-            ID: <span className="font-mono opacity-100">{currentGalleryMedia.id}</span>
-          </div>
-          
-          <button
-            onClick={handleFullscreenToggle}
-            className={`text-[7px] md:text-[8px] tracking-[0.2em] uppercase transition-all duration-300 
-              opacity-50 hover:opacity-100 ${isDarkMode ? 'text-white' : 'text-black'}`}
-          >
-            FULLSCREEN
-          </button>
-        </div>
+      {/* Main Container */}
+      <div className={`w-full flex flex-col ${isDarkMode ? 'text-white bg-black' : 'text-black bg-white'}`}>
 
-        {/* Media Display Area */}
-        <div className="flex-1 flex items-center justify-center relative min-h-0">
-          <div className={`relative w-full aspect-square max-h-[calc(100vh-200px)] 
-            border ${isDarkMode ? 'border-zinc-800' : 'border-zinc-300'} overflow-hidden rounded-lg`}>
-            
-            {currentSubMedia.endsWith('.mp4') || currentSubMedia.endsWith('.webm') ? (
-              <video
-                src={currentSubMedia}
-                className="w-full h-full object-cover cursor-pointer"
-                loop
-                muted
-                playsInline
-                autoPlay
-                onClick={() => {
-                  handleFullscreenToggle();
-                  onAssetClick?.(activeSubMediaIndex);
-                }}
-              />
-            ) : (
-              <img
-                src={currentSubMedia}
-                alt={currentGalleryMedia.label}
-                className="w-full h-full object-cover cursor-pointer"
-                loading="lazy"
-                onClick={() => {
-                  handleFullscreenToggle();
-                  onAssetClick?.(activeSubMediaIndex);
-                }}
-              />
-            )}
+        {/* Structural border lines - KEPT as-is */}
+        <div className={`fixed top-0 bottom-0 left-4 md:left-[5%] w-px transition-colors duration-1000 z-10 ${
+          isDarkMode ? 'bg-zinc-900/50' : 'bg-zinc-200'
+        }`} />
+        <div className={`fixed top-0 bottom-0 right-4 md:right-[5%] w-px transition-colors duration-1000 z-10 ${
+          isDarkMode ? 'bg-zinc-900/50' : 'bg-zinc-200'
+        }`} />
 
-            {/* Hover overlay */}
-            <div className={`absolute inset-0 ${isDarkMode ? 'bg-black/20' : 'bg-white/20'} 
-              invisible hover:visible transition-all duration-300 flex items-center justify-center`}>
-              <span className="text-[7px] md:text-[8px] tracking-[0.2em] uppercase font-mono opacity-90">
-                [ CLICK FOR FULLSCREEN ]
-              </span>
-            </div>
-          </div>
-        </div>
+        {/* Padding now matches decorative line positions */}
+        <div className="relative z-20 w-full px-4 md:px-[5%] pt-4 flex flex-col h-[calc(100vh-80px)]">
 
-        {/* Sub-Media Count + Thumbnail Strip */}
-        <div className="mt-4">
-          <div className="text-[7px] md:text-[8px] tracking-[0.2em] uppercase opacity-40 mb-2">
-            MEDIA {activeSubMediaIndex + 1}/{subMedia.length}
-          </div>
-          
-          <div className="flex gap-2 overflow-x-auto scrollbar-thin pb-2">
-            {subMedia.map((src, i) => (
-              <button
-                key={i}
-                onClick={() => setActiveSubMediaIndex(i)}
-                className={`flex-shrink-0 w-24 h-16 rounded border transition-all ${
-                  i === activeSubMediaIndex
-                    ? `${isDarkMode ? 'border-white' : 'border-black'} opacity-100`
-                    : `${isDarkMode ? 'border-zinc-800' : 'border-zinc-300'} opacity-50 hover:opacity-100`
-                }`}
-              >
-                <img src={src} className="w-full h-full object-cover rounded" alt="" />
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Right Panel - Info Content */}
-      <div className="flex-1 flex flex-col">
-        
-        {/* Top Row: Meta Data + Tabs + Back */}
-        <div className="p-4 md:p-6 border-b border-zinc-800">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-4">
-              <span className={`text-[7px] md:text-[8px] tracking-[0.4em] uppercase ${isDarkMode ? 'opacity-60' : 'opacity-70'}`}>
-                META DATA
-              </span>
-              
-              {/* Tab Buttons */}
-              <div className="flex gap-2">
-                {currentGalleryMedia.tabSections?.map(tab => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`text-[7px] tracking-[0.2em] uppercase px-3 py-1 transition-all border-b-2 ${
-                      activeTab === tab.id
-                        ? `${isDarkMode ? 'border-white opacity-100' : 'border-black opacity-100'}`
-                        : `${isDarkMode ? 'border-transparent opacity-50' : 'border-transparent opacity-50'} hover:opacity-100`
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
+          {/* Header Section */}
+          <div className="info-header flex items-start justify-between mb-4">
+            <div>
+              <div className="info-meta-top text-[7px] md:text-[8px] tracking-[0.4em] uppercase opacity-60 mb-2">
+                ID_CODE // {currentGalleryMedia.id}
               </div>
+              <h1 className={`text-[1.75rem] md:text-[2rem] lg:text-[2.5rem] font-[100] uppercase tracking-[0.05em] leading-none mb-2 ${
+                isDarkMode ? 'text-white' : 'text-black'
+              }`}>
+                {currentGalleryMedia.label}
+              </h1>
             </div>
-            
+
+            {/* Back button */}
             {onBack && (
               <button
                 onClick={onBack}
-                className={`text-[7px] md:text-[8px] tracking-[0.2em] uppercase transition-all duration-300 
+                className={`text-[7px] md:text-[8px] tracking-[0.2em] pt-[30px] uppercase transition-all duration-300 
                   opacity-50 hover:opacity-100 ${isDarkMode ? 'text-white' : 'text-black'}`}
               >
                 ‹ BACK
               </button>
             )}
           </div>
-        </div>
 
-        {/* Scrollable Description Section */}
-        <div ref={scrollContainerRef} className={`flex-1 overflow-y-auto p-4 md:p-6 
-          scrollbar-thin ${isDarkMode ? 'scrollbar-thumb-zinc-700' : 'scrollbar-thumb-zinc-300'}`}>
-          
-          <div className="mb-6">
-            <h4 className="text-[7px] md:text-[8px] tracking-[0.3em] uppercase opacity-60 mb-3">
-              DESCRIPTION
-            </h4>
-            <div className={`prose prose-sm ${isDarkMode ? 'prose-invert' : ''} max-w-none`}>
-              <p className="text-[7px] md:text-[8px] tracking-[0.15em] leading-relaxed opacity-70 whitespace-pre-line">
-                {currentGalleryMedia.tabSections?.find(t => t.id === activeTab)?.content || currentGalleryMedia.description}
-              </p>
-            </div>
-          </div>
+          {/* Content Grid */}
+          <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-0">
 
-          {/* Static Technical Specs */}
-          <div className="border-t border-zinc-800 pt-6">
-            <h4 className="text-[7px] md:text-[8px] tracking-[0.3em] uppercase opacity-60 mb-3">
-              SPECS
-            </h4>
-            <div className="space-y-2">
-              {currentGalleryMedia.metadata && Object.entries(currentGalleryMedia.metadata).map(([key, value], index) => (
-                <div key={index} className="grid grid-cols-3 gap-2">
-                  <span className="text-[7px] md:text-[8px] tracking-[0.2em] uppercase opacity-50">
-                    {key}
-                  </span>
-                  <span className="font-mono text-[7px] md:text-[8px] tracking-[0.1em] col-span-2 opacity-100">
-                    {value}
-                  </span>
+            {/* Left Column - Media Display */}
+            <div className={`border transition-all duration-300 p-4 flex flex-col ${
+              isDarkMode ? 'border-zinc-800' : 'border-zinc-300'
+            }`}>
+
+              {/* Media Display - Centers image regardless of aspect ratio */}
+              <div className="relative w-full flex items-center justify-center mb-3 flex-shrink-0">
+                <div className={`relative max-w-full max-h-[280px] border overflow-hidden rounded-lg bg-zinc-900/20 ${
+                  isDarkMode ? 'border-zinc-800' : 'border-zinc-300'
+                }`}>
+                  {currentSubMedia.endsWith('.mp4') || currentSubMedia.endsWith('.webm') ? (
+                    <video
+                      src={currentSubMedia}
+                      className="max-w-full max-h-[280px] object-contain cursor-pointer"
+                      loop
+                      muted
+                      playsInline
+                      autoPlay
+                      onClick={() => {
+                        handleFullscreenToggle();
+                        onAssetClick?.(activeSubMediaIndex);
+                      }}
+                    />
+                  ) : (
+                    <img
+                      src={currentSubMedia}
+                      alt={currentGalleryMedia.label}
+                      className="max-w-full max-h-[280px] object-contain cursor-pointer"
+                      loading="lazy"
+                      onClick={() => {
+                        handleFullscreenToggle();
+                        onAssetClick?.(activeSubMediaIndex);
+                      }}
+                    />
+                  )}
+
+                  {/* Hover overlay */}
+                  <div className={`absolute inset-0 ${isDarkMode ? 'bg-black/20' : 'bg-white/20'}
+                    invisible hover:visible transition-all duration-300 flex items-center justify-center`}>
+                    <span className="text-[7px] md:text-[8px] tracking-[0.2em] uppercase font-mono opacity-90">
+                      [ CLICK FOR FULLSCREEN ]
+                    </span>
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
+              </div>
 
-        {/* Footer: Navigation Button */}
-        <div className="p-4 md:p-6 border-t border-zinc-800">
-          <div className="flex items-center justify-end">
-            <button
-              onClick={handleNext}
-              className={`text-[7px] md:text-[8px] tracking-[0.2em] uppercase transition-all duration-300 
-                px-4 py-2 border ${
-                isDarkMode 
-                  ? 'border-white/20 hover:border-white/40 opacity-60 hover:opacity-100' 
-                  : 'border-black/20 hover:border-black/40 opacity-60 hover:opacity-100'
-              }`}
-            >
-              NEXT →
-            </button>
+              {/* Sub-Media Thumbnails */}
+              <div className="mt-auto">
+                <div className="text-[7px] md:text-[8px] tracking-[0.2em] uppercase opacity-40 mb-1">
+                  MEDIA {activeSubMediaIndex + 1}/{subMedia.length}
+                </div>
+
+                <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin">
+                  {subMedia.map((src, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setActiveSubMediaIndex(i)}
+                      className={`flex-shrink-0 w-20 h-14 rounded border overflow-hidden transition-all ${
+                        i === activeSubMediaIndex
+                          ? `${isDarkMode ? 'border-white' : 'border-black'} opacity-100`
+                          : `${isDarkMode ? 'border-zinc-800' : 'border-zinc-300'} opacity-50 hover:opacity-100`
+                      }`}
+                    >
+                      {/* Thumbnail image */}
+                      <img 
+                        src={src} 
+                        className="w-full h-full object-cover" 
+                        alt="" 
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column - Info Content */}
+            <div className={`info-info-panel flex flex-col ${
+              isDarkMode ? 'text-white bg-black' : 'text-black bg-white'}`}>
+
+              {/* Meta Data + Tabs */}
+              <div className={`info-meta-top border-b py-3 mb-3 ${
+                isDarkMode ? 'border-zinc-800' : 'border-zinc-300'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <span className={`text-[7px] md:text-[8px] tracking-[0.3em] uppercase ${
+                      isDarkMode ? 'opacity-60' : 'opacity-70'
+                    }`}>
+                      META DATA
+                    </span>
+
+                    {/* Tab Buttons */}
+                    <div className="flex gap-2">
+                      {currentGalleryMedia.tabSections?.map(tab => (
+                        <button
+                          key={tab.id}
+                          onClick={() => setActiveTab(tab.id)}
+                          className={`text-[7px] tracking-[0.2em] uppercase px-2 py-1 transition-all border-b-2 ${
+                            activeTab === tab.id
+                              ? `${isDarkMode ? 'border-white opacity-100' : 'border-black opacity-100'}`
+                              : `${isDarkMode ? 'border-transparent opacity-50' : 'border-transparent opacity-50'} hover:opacity-100`
+                          }`}
+                        >
+                          {tab.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="info-description mb-3 flex-1 min-h-0 overflow-y-auto scrollbar-thin pr-2" ref={descScrollRef}>
+                <h4 className="text-[7px] md:text-[8px] tracking-[0.3em] uppercase opacity-60 mb-2 flex-shrink-0">
+                  DESCRIPTION
+                </h4>
+                <p className={`text-[7px] md:text-[8px] tracking-[0.15em] leading-relaxed opacity-70 whitespace-pre-line ${
+                  isDarkMode ? 'text-white' : 'text-black'
+                }`}>
+                  {currentGalleryMedia.tabSections?.find(t => t.id === activeTab)?.content || currentGalleryMedia.description}
+                </p>
+              </div>
+
+              {/* Divider Bar */}
+              <div className={`border-t mb-3 ${
+                isDarkMode ? 'border-zinc-800' : 'border-zinc-300'
+              }`} />
+
+              {/* Specs */}
+              <div className="info-specs mb-3">
+                <h4 className="text-[7px] md:text-[8px] tracking-[0.3em] uppercase opacity-60 mb-2">
+                  SPECS
+                </h4>
+                <div className="space-y-1">
+                  {currentGalleryMedia.metadata && Object.entries(currentGalleryMedia.metadata).slice(0, 5).map(([key, value], index) => (
+                    <div key={index} className="grid grid-cols-3 gap-2">
+                      <span className={`text-[7px] md:text-[8px] tracking-[0.2em] uppercase ${
+                        isDarkMode ? 'opacity-50' : 'opacity-60'
+                      }`}>
+                        {key}
+                      </span>
+                      <span className={`font-mono text-[7px] md:text-[8px] tracking-[0.1em] col-span-2 truncate ${
+                        isDarkMode ? 'text-white' : 'text-black'
+                      }`}>
+                        {value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Navigation Footer */}
+              <div className={`info-nav border-t pt-3 mt-auto ${
+                isDarkMode ? 'border-zinc-800' : 'border-zinc-300'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <span className={`text-[7px] md:text-[8px] tracking-[0.2em] uppercase opacity-40 ${
+                    isDarkMode ? 'text-white' : 'text-black'
+                  }`}>
+                    ENTRY {currentGalleryMediaIndex + 1}/{galleryMediaItems.length}
+                  </span>
+
+                  <button
+                    onClick={handleNext}
+                    className={`text-[7px] md:text-[8px] tracking-[0.2em] uppercase transition-all duration-300 
+                      px-4 py-2 border ${
+                      isDarkMode
+                        ? 'border-white/20 hover:border-white/40 opacity-60 hover:opacity-100'
+                        : 'border-black/20 hover:border-black/40 opacity-60 hover:opacity-100'
+                    }`}
+                  >
+                    NEXT →
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
