@@ -5,12 +5,13 @@ import About from './components/About';
 import Artifacts from './components/Artifacts';
 import ArtifactDetail from './components/ArtifactDetail';
 import ArtifactInfo from './components/ArtifactInfo';
+import Studies from './components/Studies';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 
-type View = 'hero' | 'about' | 'artifacts' | 'contact';
+type View = 'hero' | 'about' | 'artifacts' | 'studies' | 'contact';
 type DetailView = 'detail' | 'info' | null;
 
 interface TabSection {
@@ -216,6 +217,8 @@ const renderContent = () => {
   }
 
   switch (currentView) {
+    case 'studies':
+      return <Studies isDarkMode={isDarkMode} />;
     case 'hero':
       return <Hero isDarkMode={isDarkMode} onNavigate={navigateTo} />;
     case 'about':

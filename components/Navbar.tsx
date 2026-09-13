@@ -6,8 +6,8 @@ import { useGSAP } from '@gsap/react';
 interface NavbarProps {
   currentTime: Date;
   isDarkMode: boolean;
-  onNavigate: (view: 'hero' | 'about' | 'artifacts' | 'contact') => void;
-  currentView: 'hero' | 'about' | 'artifacts' | 'contact';
+  onNavigate: (view: 'hero' | 'about' | 'artifacts' | 'studies' | 'contact') => void;
+  currentView: 'hero' | 'about' | 'artifacts' | 'studies' | 'contact';
 }
 
 const Navbar: React.FC<NavbarProps> = ({ currentTime, isDarkMode, onNavigate, currentView }) => {
@@ -43,7 +43,8 @@ const Navbar: React.FC<NavbarProps> = ({ currentTime, isDarkMode, onNavigate, cu
   const navLinks = [
     { name: 'ABOUT', view: 'about' as const },
     { name: 'ARTIFACTS', view: 'artifacts' as const },
-    { name: 'CONTACT', view: 'contact' as const }
+    { name: 'CONTACT', view: 'contact' as const },
+    { name: 'STUDIES' , view: 'studies' as const}
   ];
 
   const handleMobileNav = (view: any) => {

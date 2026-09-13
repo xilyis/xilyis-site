@@ -16,7 +16,7 @@ interface ArtifactEntry {
 
 interface ArtifactsProps {
   isDarkMode: boolean;
-  onNavigate?: (view: 'hero' | 'about' | 'artifacts' | 'contact') => 
+  onNavigate?: (view: 'hero' | 'about' | 'artifacts' | 'studies' | 'contact') => 
 void;
   onNavigateToDetail?: (artifactId: string) => void;
   onNavigateToInfo?: (artifactId: string) => void;
