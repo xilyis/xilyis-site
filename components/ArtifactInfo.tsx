@@ -1,6 +1,8 @@
 import React, { useRef, useState, useEffect } from 'react';
-import gsap from 'gsap';
+import { createPortal } from 'react-dom';
 import { useGSAP } from '@gsap/react';
+import { playEntrance, playSwap } from '../motion';
+import type { GalleryMediaItem } from '../artifactData';
 
 interface ArtifactInfoProps {
   isDarkMode: boolean;
@@ -11,20 +13,7 @@ interface ArtifactInfoProps {
   onAssetClick?: (subMediaIndex: number) => void;
 }
 
-interface TabSection {
-  id: string;
-  label: string;
-  content: string;
-}
-
-interface GalleryMediaItem {
-  id: string;
-  label: string;
-  description: string;
-  media: string[];
-  tabSections: TabSection[];
-  metadata: Record<string, string>;
-}
+const isVideo = (src: string) => /\.(mp4|webm)$/i.test(src);
 
 const ArtifactInfo: React.FC<ArtifactInfoProps> = ({
   isDarkMode,
@@ -32,109 +21,161 @@ const ArtifactInfo: React.FC<ArtifactInfoProps> = ({
   currentGalleryMediaIndex,
   onGalleryMediaChange,
   onBack,
-  onAssetClick
+  onAssetClick,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const descScrollRef = useRef<HTMLDivElement>(null);
   const [activeSubMediaIndex, setActiveSubMediaIndex] = useState(0);
   const [activeTab, setActiveTab] = useState('overview');
   const [showFullscreen, setShowFullscreen] = useState(false);
+  const lastSwapKey = useRef(`${currentGalleryMediaIndex}:${activeTab}`);
 
-  const currentGalleryMedia = galleryMediaItems[currentGalleryMediaIndex] || galleryMediaItems[0];
-  const subMedia = currentGalleryMedia.media || [];
-  const currentSubMedia = subMedia[activeSubMediaIndex];
+  const currentGalleryMedia =
+    galleryMediaItems[currentGalleryMediaIndex] || galleryMediaItems[0];
+  const subMedia = currentGalleryMedia?.media ?? [];
+  const currentSubMedia = subMedia[activeSubMediaIndex] ?? '';
+  const itemCount = galleryMediaItems.length;
 
   useEffect(() => {
     setActiveSubMediaIndex(0);
   }, [currentGalleryMediaIndex]);
 
   useEffect(() => {
+    const stepGalleryMedia = (direction: 1 | -1) => {
+      if (!itemCount) return;
+      onGalleryMediaChange?.(
+        (currentGalleryMediaIndex + direction + itemCount) % itemCount
+      );
+    };
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight' || e.key === ' ') {
-        e.preventDefault();
-        handleNext();
-      } else if (e.key === 'ArrowLeft') {
-        e.preventDefault();
-        handlePrev();
-      } else if (e.key === 'Escape') {
+      const target = e.target as HTMLElement | null;
+
+      if (e.key === 'Escape') {
         if (showFullscreen) {
           setShowFullscreen(false);
         } else {
           onBack?.();
         }
+        return;
+      }
+
+      if (target?.closest('input, textarea')) return;
+
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        stepGalleryMedia(1);
+      } else if (e.key === ' ') {
+        // Don't hijack Space when it is activating a button or link
+        if (target?.closest('button, a')) return;
+        e.preventDefault();
+        stepGalleryMedia(1);
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        stepGalleryMedia(-1);
       } else if (e.key === 'f' || e.key === 'F') {
         e.preventDefault();
-        handleFullscreenToggle();
+        setShowFullscreen((prev) => !prev);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [showFullscreen, currentGalleryMediaIndex, galleryMediaItems.length, onBack]);
+  }, [
+    showFullscreen,
+    currentGalleryMediaIndex,
+    itemCount,
+    onBack,
+    onGalleryMediaChange,
+  ]);
 
   useEffect(() => {
-    if (showFullscreen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
+    document.body.style.overflow = showFullscreen ? 'hidden' : '';
     return () => {
       document.body.style.overflow = '';
     };
   }, [showFullscreen]);
 
-  const handleNext = () => {
-    const nextIndex = (currentGalleryMediaIndex + 1) % galleryMediaItems.length;
-    if (onGalleryMediaChange) {
-      onGalleryMediaChange(nextIndex);
-    }
+  // Page entrance (shared motion settings)
+  useGSAP(
+    () => {
+      playEntrance([
+        '.info-header',
+        '.info-media',
+        '.info-tabs',
+        '.info-description',
+        '.info-specs',
+        '.info-nav',
+      ]);
+    },
+    { scope: containerRef }
+  );
+
+  // Soft swap when the tab or gallery item changes
+  useGSAP(
+    () => {
+      const key = `${currentGalleryMediaIndex}:${activeTab}`;
+      if (lastSwapKey.current === key) return;
+      lastSwapKey.current = key;
+      playSwap('.info-swap');
+    },
+    { scope: containerRef, dependencies: [currentGalleryMediaIndex, activeTab] }
+  );
+
+  const toggleFullscreen = () => setShowFullscreen((prev) => !prev);
+
+  const openFullscreen = () => {
+    setShowFullscreen(true);
+    onAssetClick?.(activeSubMediaIndex);
   };
 
-  const handlePrev = () => {
-    const prevIndex = (currentGalleryMediaIndex - 1 + galleryMediaItems.length) % galleryMediaItems.length;
-    if (onGalleryMediaChange) {
-      onGalleryMediaChange(prevIndex);
-    }
-  };
+  const themeClass = isDarkMode ? 'text-white bg-black' : 'text-black bg-white';
+  const borderClass = isDarkMode ? 'border-zinc-800' : 'border-zinc-300';
 
-  const handleFullscreenToggle = () => {
-    setShowFullscreen(prev => !prev);
-  };
-
-  // GSAP animations
-  useGSAP(() => {
-    const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
-
-    tl.from('.info-header', { y: -20, opacity: 0, duration: 0.6 })
-      .from('.info-meta-top', { x: -15, opacity: 0, duration: 0.5, stagger: 0.08 }, '-=0.4')
-      .from('.info-description', { y: 10, opacity: 0, duration: 0.5 }, '-=0.3')
-      .from('.info-specs', { y: 15, opacity: 0, duration: 0.5 }, '-=0.4')
-      .from('.info-nav', { opacity: 0, y: 10, duration: 0.4 }, '-=0.2');
-  }, { scope: containerRef });
-
-  return (
-    <div ref={containerRef} className={`w-full h-screen flex ${isDarkMode ? 'text-white bg-black' : 'text-black bg-white'}`}>
-
-      {/* Fullscreen Overlay */}
-      <div className={`fixed inset-0 z-50 ${
-        isDarkMode ? 'bg-black/95' : 'bg-white/95'
-      } flex items-center justify-center transition-opacity duration-300 ${
-        showFullscreen ? 'opacity-100 visible' : 'opacity-0 invisible'
-      }`}>
-        <div className="relative w-full h-full pt-16 md:pt-20 p-4 md:p-8">
+  if (!currentGalleryMedia) {
+    return (
+      <div className={`flex w-full flex-1 flex-col px-4 pt-4 ${themeClass}`}>
+        {onBack && (
           <button
-            onClick={handleFullscreenToggle}
-            className={`absolute top-20 right-10 z-50 text-[7px] md:text-[8px] tracking-[0.2em] uppercase
-                opacity-50 hover:opacity-100 transition-all ${isDarkMode ? 'text-white' : 'text-black'}`}
+            type="button"
+            onClick={onBack}
+            className="mb-4 w-fit text-[7px] uppercase tracking-[0.2em] opacity-50 transition-opacity hover:opacity-100 md:text-[8px]"
           >
-            [ CLOSE FULLSCREEN ]
+            ‹ BACK
           </button>
+        )}
+        <p className="text-[7px] uppercase tracking-[0.2em] opacity-50 md:text-[8px]">
+          NO MEDIA AVAILABLE
+        </p>
+      </div>
+    );
+  }
 
-          <div className="relative w-full h-full flex items-center justify-center">
-            {currentSubMedia.endsWith('.mp4') || currentSubMedia.endsWith('.webm') ? (
+  // Rendered into <body> so it sits above the fixed nav and footer
+  const fullscreenOverlay = (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-hidden={!showFullscreen}
+      className={`fixed inset-0 z-[60] flex items-center justify-center transition-opacity duration-300 motion-reduce:transition-none ${
+        isDarkMode ? 'bg-black/95 text-white' : 'bg-white/95 text-black'
+      } ${showFullscreen ? 'visible opacity-100' : 'invisible opacity-0'}`}
+    >
+      <div className="relative h-full w-full px-4 pb-4 pt-16 md:px-8 md:pb-8 md:pt-20">
+        <button
+          type="button"
+          onClick={toggleFullscreen}
+          className="absolute right-6 top-20 z-10 text-[7px] uppercase tracking-[0.2em] opacity-50 transition-opacity hover:opacity-100 md:right-10 md:text-[8px]"
+        >
+          [ CLOSE FULLSCREEN ]
+        </button>
+
+        {/* Only mounted while open, so hidden videos never play */}
+        {showFullscreen && currentSubMedia && (
+          <div className="flex h-full w-full items-center justify-center">
+            {isVideo(currentSubMedia) ? (
               <video
                 src={currentSubMedia}
-                className="max-w-full max-h-full object-contain"
+                className="max-h-full max-w-full object-contain"
                 controls
                 autoPlay
               />
@@ -142,229 +183,210 @@ const ArtifactInfo: React.FC<ArtifactInfoProps> = ({
               <img
                 src={currentSubMedia}
                 alt={currentGalleryMedia.label}
-                className="max-w-full max-h-full object-contain"
+                className="max-h-full max-w-full object-contain"
               />
             )}
           </div>
-        </div>
+        )}
       </div>
+    </div>
+  );
 
-      {/* Main Container */}
-      <div className={`w-full flex flex-col ${isDarkMode ? 'text-white bg-black' : 'text-black bg-white'}`}>
+  return (
+    <div ref={containerRef} className={`flex w-full flex-1 ${themeClass}`}>
+      {createPortal(fullscreenOverlay, document.body)}
 
-        {/* Structural border lines - KEPT as-is */}
-        <div className={`fixed top-0 bottom-0 left-4 md:left-[5%] w-px transition-colors duration-1000 z-10 ${
-          isDarkMode ? 'bg-zinc-900/50' : 'bg-zinc-200'
-        }`} />
-        <div className={`fixed top-0 bottom-0 right-4 md:right-[5%] w-px transition-colors duration-1000 z-10 ${
-          isDarkMode ? 'bg-zinc-900/50' : 'bg-zinc-200'
-        }`} />
-
-        {/* Padding now matches decorative line positions */}
-        <div className="relative z-20 w-full px-4 md:px-[5%] pt-4 flex flex-col h-[calc(100vh-80px)]">
-
-          {/* Header Section */}
-          <div className="info-header flex items-start justify-between mb-4">
-            <div>
-              <div className="info-meta-top text-[7px] md:text-[8px] tracking-[0.4em] uppercase opacity-60 mb-2">
-                ID_CODE // {currentGalleryMedia.id}
-              </div>
-              <h1 className={`text-[1.75rem] md:text-[2rem] lg:text-[2.5rem] font-[100] uppercase tracking-[0.05em] leading-none mb-2 ${
-                isDarkMode ? 'text-white' : 'text-black'
-              }`}>
-                {currentGalleryMedia.label}
-              </h1>
+      {/* One screen on large displays; flows naturally on small ones */}
+      <div className="relative z-20 flex w-full flex-col px-4 pb-16 pt-4 md:px-[5%] md:pb-20 lg:h-[calc(100svh-9rem)] lg:pb-4">
+        {/* Header */}
+        <div className="info-header mb-4 flex items-start justify-between">
+          <div>
+            <div className="info-swap mb-2 text-[7px] uppercase tracking-[0.4em] opacity-60 md:text-[8px]">
+              ID_CODE // {currentGalleryMedia.id}
             </div>
-
-            {/* Back button */}
-            {onBack && (
-              <button
-                onClick={onBack}
-                className={`text-[7px] md:text-[8px] tracking-[0.2em] pt-[30px] uppercase transition-all duration-300 
-                  opacity-50 hover:opacity-100 ${isDarkMode ? 'text-white' : 'text-black'}`}
-              >
-                ‹ BACK
-              </button>
-            )}
+            <h1 className="info-swap mb-2 text-[1.75rem] font-[100] uppercase leading-none tracking-[0.05em] md:text-[2rem] lg:text-[2.5rem]">
+              {currentGalleryMedia.label}
+            </h1>
           </div>
 
-          {/* Content Grid */}
-          <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-0">
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              className="pt-[30px] text-[7px] uppercase tracking-[0.2em] opacity-50 transition-opacity duration-300 hover:opacity-100 md:text-[8px]"
+            >
+              ‹ BACK
+            </button>
+          )}
+        </div>
 
-            {/* Left Column - Media Display */}
-            <div className={`border transition-all duration-300 p-4 flex flex-col ${
-              isDarkMode ? 'border-zinc-800' : 'border-zinc-300'
-            }`}>
+        {/* Content grid */}
+        <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-2">
+          {/* Left column: media */}
+          <div className={`info-media flex flex-col border p-4 ${borderClass}`}>
+            <div className="relative mb-3 flex w-full flex-shrink-0 items-center justify-center">
+              <div
+                className={`group relative max-h-[280px] max-w-full overflow-hidden rounded-lg border bg-zinc-900/20 ${borderClass}`}
+              >
+                {currentSubMedia && isVideo(currentSubMedia) ? (
+                  <video
+                    src={currentSubMedia}
+                    className="max-h-[280px] max-w-full cursor-pointer object-contain"
+                    loop
+                    muted
+                    playsInline
+                    autoPlay
+                    onClick={openFullscreen}
+                  />
+                ) : currentSubMedia ? (
+                  <img
+                    src={currentSubMedia}
+                    alt={currentGalleryMedia.label}
+                    className="max-h-[280px] max-w-full cursor-pointer object-contain"
+                    loading="lazy"
+                    onClick={openFullscreen}
+                  />
+                ) : null}
 
-              {/* Media Display - Centers image regardless of aspect ratio */}
-              <div className="relative w-full flex items-center justify-center mb-3 flex-shrink-0">
-                <div className={`relative max-w-full max-h-[280px] border overflow-hidden rounded-lg bg-zinc-900/20 ${
-                  isDarkMode ? 'border-zinc-800' : 'border-zinc-300'
-                }`}>
-                  {currentSubMedia.endsWith('.mp4') || currentSubMedia.endsWith('.webm') ? (
-                    <video
-                      src={currentSubMedia}
-                      className="max-w-full max-h-[280px] object-contain cursor-pointer"
-                      loop
-                      muted
-                      playsInline
-                      autoPlay
-                      onClick={() => {
-                        handleFullscreenToggle();
-                        onAssetClick?.(activeSubMediaIndex);
-                      }}
-                    />
-                  ) : (
-                    <img
-                      src={currentSubMedia}
-                      alt={currentGalleryMedia.label}
-                      className="max-w-full max-h-[280px] object-contain cursor-pointer"
-                      loading="lazy"
-                      onClick={() => {
-                        handleFullscreenToggle();
-                        onAssetClick?.(activeSubMediaIndex);
-                      }}
-                    />
-                  )}
-
-                  {/* Hover overlay */}
-                  <div className={`absolute inset-0 ${isDarkMode ? 'bg-black/20' : 'bg-white/20'}
-                    invisible hover:visible transition-all duration-300 flex items-center justify-center`}>
-                    <span className="text-[7px] md:text-[8px] tracking-[0.2em] uppercase font-mono opacity-90">
-                      [ CLICK FOR FULLSCREEN ]
-                    </span>
-                  </div>
+                {/* Hover hint: group-hover, because the overlay itself ignores the pointer */}
+                <div
+                  className={`pointer-events-none absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100 ${
+                    isDarkMode ? 'bg-black/20' : 'bg-white/20'
+                  }`}
+                >
+                  <span className="font-mono text-[7px] uppercase tracking-[0.2em] opacity-90 md:text-[8px]">
+                    [ CLICK FOR FULLSCREEN ]
+                  </span>
                 </div>
               </div>
+            </div>
 
-              {/* Sub-Media Thumbnails */}
-              <div className="mt-auto">
-                <div className="text-[7px] md:text-[8px] tracking-[0.2em] uppercase opacity-40 mb-1">
-                  MEDIA {activeSubMediaIndex + 1}/{subMedia.length}
-                </div>
+            {/* Sub-media thumbnails */}
+            <div className="mt-auto">
+              <div className="mb-1 text-[7px] uppercase tracking-[0.2em] opacity-40 md:text-[8px]">
+                MEDIA {subMedia.length ? activeSubMediaIndex + 1 : 0}/{subMedia.length}
+              </div>
 
-                <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin">
-                  {subMedia.map((src, i) => (
+              <div className="scrollbar-thin flex gap-2 overflow-x-auto pb-1">
+                {subMedia.map((src, i) => (
+                  <button
+                    key={`${src}-${i}`}
+                    type="button"
+                    onClick={() => setActiveSubMediaIndex(i)}
+                    aria-label={`Show media ${i + 1}`}
+                    className={`h-14 w-20 flex-shrink-0 overflow-hidden rounded border transition-[opacity,border-color] ${
+                      i === activeSubMediaIndex
+                        ? `${isDarkMode ? 'border-white' : 'border-black'} opacity-100`
+                        : `${borderClass} opacity-50 hover:opacity-100`
+                    }`}
+                  >
+                    {isVideo(src) ? (
+                      <video
+                        src={src}
+                        className="pointer-events-none h-full w-full object-cover"
+                        muted
+                        preload="metadata"
+                      />
+                    ) : (
+                      <img src={src} className="h-full w-full object-cover" alt="" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Right column: info */}
+          <div className={`flex min-h-0 flex-col ${themeClass}`}>
+            {/* Metadata + tabs */}
+            <div className={`info-tabs mb-3 border-b py-3 ${borderClass}`}>
+              <div className="flex items-center gap-4">
+                <span
+                  className={`text-[7px] uppercase tracking-[0.3em] md:text-[8px] ${
+                    isDarkMode ? 'opacity-60' : 'opacity-70'
+                  }`}
+                >
+                  META DATA
+                </span>
+
+                <div className="flex gap-2">
+                  {currentGalleryMedia.tabSections?.map((tab) => (
                     <button
-                      key={i}
-                      onClick={() => setActiveSubMediaIndex(i)}
-                      className={`flex-shrink-0 w-20 h-14 rounded border overflow-hidden transition-all ${
-                        i === activeSubMediaIndex
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`border-b-2 px-2 py-1 text-[7px] uppercase tracking-[0.2em] transition-[opacity,border-color] ${
+                        activeTab === tab.id
                           ? `${isDarkMode ? 'border-white' : 'border-black'} opacity-100`
-                          : `${isDarkMode ? 'border-zinc-800' : 'border-zinc-300'} opacity-50 hover:opacity-100`
+                          : 'border-transparent opacity-50 hover:opacity-100'
                       }`}
                     >
-                      {/* Thumbnail image */}
-                      <img 
-                        src={src} 
-                        className="w-full h-full object-cover" 
-                        alt="" 
-                      />
+                      {tab.label}
                     </button>
                   ))}
                 </div>
               </div>
             </div>
 
-            {/* Right Column - Info Content */}
-            <div className={`info-info-panel flex flex-col ${
-              isDarkMode ? 'text-white bg-black' : 'text-black bg-white'}`}>
+            {/* Description */}
+            <div className="info-description scrollbar-thin mb-3 max-h-[40vh] min-h-0 flex-1 overflow-y-auto pr-2 lg:max-h-none">
+              <h4 className="mb-2 flex-shrink-0 text-[7px] uppercase tracking-[0.3em] opacity-60 md:text-[8px]">
+                DESCRIPTION
+              </h4>
+              <p className="info-swap whitespace-pre-line text-[7px] leading-relaxed tracking-[0.15em] opacity-70 md:text-[8px]">
+                {currentGalleryMedia.tabSections?.find((t) => t.id === activeTab)
+                  ?.content || currentGalleryMedia.description}
+              </p>
+            </div>
 
-              {/* Meta Data + Tabs */}
-              <div className={`info-meta-top border-b py-3 mb-3 ${
-                isDarkMode ? 'border-zinc-800' : 'border-zinc-300'
-              }`}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <span className={`text-[7px] md:text-[8px] tracking-[0.3em] uppercase ${
-                      isDarkMode ? 'opacity-60' : 'opacity-70'
-                    }`}>
-                      META DATA
-                    </span>
+            <div className={`mb-3 border-t ${borderClass}`} />
 
-                    {/* Tab Buttons */}
-                    <div className="flex gap-2">
-                      {currentGalleryMedia.tabSections?.map(tab => (
-                        <button
-                          key={tab.id}
-                          onClick={() => setActiveTab(tab.id)}
-                          className={`text-[7px] tracking-[0.2em] uppercase px-2 py-1 transition-all border-b-2 ${
-                            activeTab === tab.id
-                              ? `${isDarkMode ? 'border-white opacity-100' : 'border-black opacity-100'}`
-                              : `${isDarkMode ? 'border-transparent opacity-50' : 'border-transparent opacity-50'} hover:opacity-100`
+            {/* Specs */}
+            <div className="info-specs mb-3">
+              <h4 className="mb-2 text-[7px] uppercase tracking-[0.3em] opacity-60 md:text-[8px]">
+                SPECS
+              </h4>
+              <div className="info-swap space-y-1">
+                {currentGalleryMedia.metadata &&
+                  Object.entries(currentGalleryMedia.metadata)
+                    .slice(0, 5)
+                    .map(([key, value]) => (
+                      <div key={key} className="grid grid-cols-3 gap-2">
+                        <span
+                          className={`text-[7px] uppercase tracking-[0.2em] md:text-[8px] ${
+                            isDarkMode ? 'opacity-50' : 'opacity-60'
                           }`}
                         >
-                          {tab.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+                          {key}
+                        </span>
+                        <span className="col-span-2 truncate font-mono text-[7px] tracking-[0.1em] md:text-[8px]">
+                          {value}
+                        </span>
+                      </div>
+                    ))}
               </div>
+            </div>
 
-              {/* Description */}
-              <div className="info-description mb-3 flex-1 min-h-0 overflow-y-auto scrollbar-thin pr-2" ref={descScrollRef}>
-                <h4 className="text-[7px] md:text-[8px] tracking-[0.3em] uppercase opacity-60 mb-2 flex-shrink-0">
-                  DESCRIPTION
-                </h4>
-                <p className={`text-[7px] md:text-[8px] tracking-[0.15em] leading-relaxed opacity-70 whitespace-pre-line ${
-                  isDarkMode ? 'text-white' : 'text-black'
-                }`}>
-                  {currentGalleryMedia.tabSections?.find(t => t.id === activeTab)?.content || currentGalleryMedia.description}
-                </p>
-              </div>
+            {/* Navigation footer */}
+            <div className={`info-nav mt-auto border-t pt-3 ${borderClass}`}>
+              <div className="flex items-center justify-between">
+                <span className="text-[7px] uppercase tracking-[0.2em] opacity-40 md:text-[8px]">
+                  ENTRY {currentGalleryMediaIndex + 1}/{itemCount}
+                </span>
 
-              {/* Divider Bar */}
-              <div className={`border-t mb-3 ${
-                isDarkMode ? 'border-zinc-800' : 'border-zinc-300'
-              }`} />
-
-              {/* Specs */}
-              <div className="info-specs mb-3">
-                <h4 className="text-[7px] md:text-[8px] tracking-[0.3em] uppercase opacity-60 mb-2">
-                  SPECS
-                </h4>
-                <div className="space-y-1">
-                  {currentGalleryMedia.metadata && Object.entries(currentGalleryMedia.metadata).slice(0, 5).map(([key, value], index) => (
-                    <div key={index} className="grid grid-cols-3 gap-2">
-                      <span className={`text-[7px] md:text-[8px] tracking-[0.2em] uppercase ${
-                        isDarkMode ? 'opacity-50' : 'opacity-60'
-                      }`}>
-                        {key}
-                      </span>
-                      <span className={`font-mono text-[7px] md:text-[8px] tracking-[0.1em] col-span-2 truncate ${
-                        isDarkMode ? 'text-white' : 'text-black'
-                      }`}>
-                        {value}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Navigation Footer */}
-              <div className={`info-nav border-t pt-3 mt-auto ${
-                isDarkMode ? 'border-zinc-800' : 'border-zinc-300'
-              }`}>
-                <div className="flex items-center justify-between">
-                  <span className={`text-[7px] md:text-[8px] tracking-[0.2em] uppercase opacity-40 ${
-                    isDarkMode ? 'text-white' : 'text-black'
-                  }`}>
-                    ENTRY {currentGalleryMediaIndex + 1}/{galleryMediaItems.length}
-                  </span>
-
-                  <button
-                    onClick={handleNext}
-                    className={`text-[7px] md:text-[8px] tracking-[0.2em] uppercase transition-all duration-300 
-                      px-4 py-2 border ${
-                      isDarkMode
-                        ? 'border-white/20 hover:border-white/40 opacity-60 hover:opacity-100'
-                        : 'border-black/20 hover:border-black/40 opacity-60 hover:opacity-100'
-                    }`}
-                  >
-                    NEXT →
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    onGalleryMediaChange?.((currentGalleryMediaIndex + 1) % itemCount)
+                  }
+                  className={`border px-4 py-2 text-[7px] uppercase tracking-[0.2em] opacity-60 transition-[opacity,border-color] duration-300 hover:opacity-100 md:text-[8px] ${
+                    isDarkMode
+                      ? 'border-white/20 hover:border-white/40'
+                      : 'border-black/20 hover:border-black/40'
+                  }`}
+                >
+                  NEXT →
+                </button>
               </div>
             </div>
           </div>
