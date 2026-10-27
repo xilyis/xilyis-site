@@ -1,7 +1,7 @@
-
 import React, { useRef } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
+import { FEATURES } from '../featureFlags';
 
 interface HeroProps {
   isDarkMode: boolean;
@@ -54,7 +54,7 @@ const Hero: React.FC<HeroProps> = ({ isDarkMode, onNavigate }) => {
 
   }, { scope: containerRef });
 
-  const handleButtonParallax = (e: React.MouseEvent<HTMLButtonElement>, btnRef: React.RefObject<HTMLButtonElement>) => {
+  const handleButtonParallax = (e: React.MouseEvent<HTMLButtonElement>, btnRef: React.RefObject<HTMLButtonElement | null>) => {
     if (!btnRef.current) return;
     
     const rect = btnRef.current.getBoundingClientRect();
@@ -88,7 +88,7 @@ const Hero: React.FC<HeroProps> = ({ isDarkMode, onNavigate }) => {
     }
   };
 
-  const resetButtonParallax = (btnRef: React.RefObject<HTMLButtonElement>) => {
+  const resetButtonParallax = (btnRef: React.RefObject<HTMLButtonElement | null>) => {
     if (!btnRef.current) return;
     const content = btnRef.current.querySelector('.parallax-content');
     const light = btnRef.current.querySelector('.parallax-light');
@@ -135,19 +135,21 @@ const Hero: React.FC<HeroProps> = ({ isDarkMode, onNavigate }) => {
         ref={buttonsRef}
         className="flex flex-col sm:flex-row items-center justify-center gap-5 md:gap-8 mb-12 md:mb-16 w-full max-w-xs sm:max-w-none px-4"
       >
-        <button 
-          ref={primaryBtnRef}
-          onClick={() => onNavigate('artifacts')}
-          onMouseMove={(e) => handleButtonParallax(e, primaryBtnRef)}
-          onMouseLeave={() => resetButtonParallax(primaryBtnRef)}
-          className={`group relative w-full sm:w-auto px-8 md:px-11 py-3.5 md:py-4 text-[8px] font-bold tracking-[0.35em] md:tracking-[0.4em] uppercase transition-colors duration-500 overflow-hidden ${isDarkMode ? 'bg-white text-black' : 'bg-black text-white'}`}
-        >
-          <div className="parallax-content relative z-10 block">
-            Archive
-          </div>
-          <div className={`parallax-light absolute w-28 h-28 blur-2xl rounded-full pointer-events-none opacity-0 ${isDarkMode ? 'bg-black' : 'bg-white'}`} style={{ top: 0, left: 0 }} />
-          <div className={`absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-500 ${isDarkMode ? 'bg-black' : 'bg-white'}`} />
-        </button>
+        {FEATURES.artifacts && (
+          <button 
+            ref={primaryBtnRef}
+            onClick={() => onNavigate('artifacts')}
+            onMouseMove={(e) => handleButtonParallax(e, primaryBtnRef)}
+            onMouseLeave={() => resetButtonParallax(primaryBtnRef)}
+            className={`group relative w-full sm:w-auto px-8 md:px-11 py-3.5 md:py-4 text-[8px] font-bold tracking-[0.35em] md:tracking-[0.4em] uppercase transition-colors duration-500 overflow-hidden ${isDarkMode ? 'bg-white text-black' : 'bg-black text-white'}`}
+          >
+            <div className="parallax-content relative z-10 block">
+              Archive
+            </div>
+            <div className={`parallax-light absolute w-28 h-28 blur-2xl rounded-full pointer-events-none opacity-0 ${isDarkMode ? 'bg-black' : 'bg-white'}`} style={{ top: 0, left: 0 }} />
+            <div className={`absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-500 ${isDarkMode ? 'bg-black' : 'bg-white'}`} />
+          </button>
+        )}
 
         <button 
           ref={secondaryBtnRef}

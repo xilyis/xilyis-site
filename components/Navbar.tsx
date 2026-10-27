@@ -2,12 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Globe, Menu, X } from 'lucide-react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
+import { isViewEnabled } from '../featureFlags';
 
 interface NavbarProps {
   currentTime: Date;
   isDarkMode: boolean;
-  onNavigate: (view: 'hero' | 'about' | 'artifacts' | 'studies' | 'contact') => void;
-  currentView: 'hero' | 'about' | 'artifacts' | 'studies' | 'contact';
+  onNavigate: (view: 'hero' | 'about' | 'artifacts' | 'studies' | 'contact' | 'writings' | 'writingArticle') => void;
+  currentView: 'hero' | 'about' | 'artifacts' | 'studies' | 'contact' | 'writings' | 'writingArticle';
 }
 
 const Navbar: React.FC<NavbarProps> = ({ currentTime, isDarkMode, onNavigate, currentView }) => {
@@ -43,9 +44,9 @@ const Navbar: React.FC<NavbarProps> = ({ currentTime, isDarkMode, onNavigate, cu
   const navLinks = [
     { name: 'ABOUT', view: 'about' as const },
     { name: 'ARTIFACTS', view: 'artifacts' as const },
+    { name: 'STUDIES' , view: 'studies' as const},
     { name: 'CONTACT', view: 'contact' as const },
-    { name: 'STUDIES' , view: 'studies' as const}
-  ];
+  ].filter((link) => isViewEnabled(link.view));
 
   const handleMobileNav = (view: any) => {
     setIsMenuOpen(false);

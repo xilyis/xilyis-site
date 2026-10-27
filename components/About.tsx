@@ -15,7 +15,7 @@ interface Capability {
 
 interface AboutProps {
   isDarkMode: boolean;
-  onNavigate: (view: 'hero' | 'about' | 'artifacts' | 'contact') => void;
+  onNavigate: (view: 'hero' | 'about' | 'artifacts' | 'contact' | 'writings'| 'writingArticle') => void;
 }
 
 const About: React.FC<AboutProps> = ({ isDarkMode, onNavigate }) => {
@@ -105,7 +105,10 @@ const About: React.FC<AboutProps> = ({ isDarkMode, onNavigate }) => {
 {/* PAGE FOOTER - 4 COLUMN LAYOUT */}
       <section>
         <div className="mt-24">
-          <PageFooter isDarkMode={isDarkMode} />
+          <PageFooter 
+          isDarkMode={isDarkMode} 
+          onNavigate={onNavigate}
+          />
         </div>
       </section>
 
