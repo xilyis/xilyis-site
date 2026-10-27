@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
-import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
+import { playEntrance } from '../motion';
 
 interface StudyEntry {
   id: string;
@@ -75,63 +75,33 @@ const Studies: React.FC<StudiesProps> = ({ isDarkMode }) => {
 
   useGSAP(
     () => {
-      const timeline = gsap.timeline({
-        defaults: {
-          ease: 'power2.out',
-        },
-      });
-
-      timeline
-        .from('.studies-subtitle', {
-          x: 15,
-          opacity: 0,
-          duration: 0.6,
-          clearProps: 'all',
-        })
-        .from(
-          '.studies-title',
-          {
-            x: 15,
-            opacity: 0,
-            duration: 0.7,
-            clearProps: 'all',
-          },
-          '-=0.35'
-        )
-        .from(
-          '.study-list-item',
-          {
-            x: 15,
-            opacity: 0,
-            duration: 0.5,
-            stagger: 0.08,
-            clearProps: 'all',
-          },
-          '-=0.4'
-        );
+      playEntrance([
+        '.studies-subtitle',
+        '.studies-title',
+        '.study-list-item',
+        '.studies-meta',
+      ]);
     },
-    {
-      scope: containerRef,
-    }
+    { scope: containerRef }
   );
 
   return (
     <div
       ref={containerRef}
-      className={`min-h-screen w-full px-[10px] pt-4 md:px-6 lg:px-10 ${
+      className={`flex w-full flex-1 flex-col px-[10px] pb-16 pt-4 md:px-6 md:pb-20 lg:px-10 ${
         isDarkMode
           ? 'bg-black text-white'
           : 'bg-white text-black'
       }`}
     >
-      <main className="relative min-h-[calc(100vh-100px)]">
+      <div className="relative flex flex-1 flex-col">
         {/* Page label */}
         <div className="absolute left-0 top-0 text-[7px] uppercase tracking-[0.35em] opacity-50">
           ACTIVE / STUDIES
         </div>
 
         {/* Right-aligned content */}
-        <div className="ml-auto w-full max-w-[720px] pt-8 md:pt-10 lg:mr-[2%] lg:w-[58%]">
+        <div className="ml-auto flex w-full max-w-[720px] flex-1 flex-col pt-8 md:pt-10 lg:mr-[2%] lg:w-[58%]">
           <div className="studies-subtitle mb-2 text-[7px] uppercase tracking-[0.4em] opacity-60">
             STUDY_ARCHIVE / ACTIVE
           </div>
@@ -141,14 +111,14 @@ const Studies: React.FC<StudiesProps> = ({ isDarkMode }) => {
           </h1>
 
           {/* Expandable horizontal study rows */}
-          <div className="study-list space-y-1">
+          <div className="study-list mb-10 space-y-1">
             {studies.map((study, index) => {
               const isSelected = selectedEntry === index;
 
               return (
                 <div
                   key={study.id}
-                  className={`study-list-item border transition-all duration-500 ${
+                  className={`study-list-item border transition-colors duration-500 motion-reduce:transition-none ${
                     isSelected
                       ? isDarkMode
                         ? 'border-zinc-500'
@@ -162,6 +132,8 @@ const Studies: React.FC<StudiesProps> = ({ isDarkMode }) => {
                   <button
                     type="button"
                     onClick={() => setSelectedEntry(index)}
+                    aria-expanded={isSelected}
+                    aria-controls={`study-panel-${study.id}`}
                     className="group flex w-full items-center justify-between px-3 py-3 text-left md:px-4"
                   >
                     <div className="flex items-center gap-5">
@@ -203,7 +175,9 @@ const Studies: React.FC<StudiesProps> = ({ isDarkMode }) => {
 
                   {/* Expanded selected study */}
                   <div
-                    className={`grid transition-[grid-template-rows,opacity] duration-500 ${
+                    id={`study-panel-${study.id}`}
+                    inert={!isSelected}
+                    className={`grid transition-[grid-template-rows,opacity] duration-500 motion-reduce:transition-none ${
                       isSelected
                         ? 'grid-rows-[1fr] opacity-100'
                         : 'grid-rows-[0fr] opacity-0'
@@ -300,7 +274,7 @@ const Studies: React.FC<StudiesProps> = ({ isDarkMode }) => {
           </div>
 
           {/* Bottom metadata */}
-          <div className="mt-8 border-t border-current/10 pt-4">
+          <div className="studies-meta mt-auto border-t border-current/10 pt-4">
             <div className="grid grid-cols-2 gap-y-3 text-[7px] uppercase tracking-[0.2em] md:grid-cols-3">
               <div className="opacity-45">SELECTED</div>
 
@@ -329,7 +303,7 @@ const Studies: React.FC<StudiesProps> = ({ isDarkMode }) => {
             </div>
           </div>
         </div>
-      </main>
+      </div>
 
     </div>
   );

@@ -1,158 +1,164 @@
 import React, { useRef, useState } from 'react';
-import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
-
-interface ArtifactEntry {
-  id: string;
-  label: string;
-  status: string;
-  timestamp: string;
-  thumbnail: string;
-  description: string;
-  sourceUrl: string;
-  downloadUrl?: string;
-  type: 'python' | 'web' | 'other';
-}
+import { playEntrance, playSwap } from '../motion';
+import { artifacts as entries } from '../artifactData';
 
 interface ArtifactsProps {
   isDarkMode: boolean;
-  onNavigate?: (view: 'hero' | 'about' | 'artifacts' | 'studies' | 'contact') => 
-void;
+  onNavigate?: (view: 'hero' | 'about' | 'artifacts' | 'studies' | 'contact') => void;
   onNavigateToDetail?: (artifactId: string) => void;
   onNavigateToInfo?: (artifactId: string) => void;
 }
 
-const Artifacts: React.FC<ArtifactsProps> = ({ 
-  isDarkMode, 
-  onNavigate,
-onNavigateToDetail,
-onNavigateToInfo
+const Artifacts: React.FC<ArtifactsProps> = ({
+  isDarkMode,
+  onNavigateToDetail,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [selectedEntry, setSelectedEntry] = useState(0);
-  
-  const entries = [
-  {
-    id: '01',
-    label: 'ENTRY 01',
-    status: 'ACTIVE',
-    timestamp: '2024.08.11',
-    thumbnail: '/assets/default-placeholder.png',
-    description: 'Coming soon...',
-    sourceUrl: '#',
-    downloadUrl: '/assets/default-placeholder.png',
-    type: 'python',
-    media: ['/assets/default-placeholder.png', '/assets/default-placeholder.png']
-  },
+  const lastSelected = useRef(selectedEntry);
 
-  {
-    id: '02',
-    label: 'ENTRY 02',
-    status: 'VER_2',
-    timestamp: '2024.03.15',
-    thumbnail: '/assets/default-placeholder.png',
-    description: 'Coming soon...',
-    sourceUrl: '#',
-    type: 'python',
-    media: ['/assets/default-placeholder.png']
-  }
-];
+  const selected = entries[selectedEntry];
+  const hasSource = Boolean(selected.sourceUrl) && selected.sourceUrl !== '#';
 
-    useGSAP(() => {
-    const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
-    tl.from('.entry-title', { y: -20, duration: 0.8, clearProps: 'all' })
-      .from('.entry-subtitle', { x: -15, duration: 0.6, clearProps: 'all' }, '-=0.5')
-      .from('.entry-list-item', { x: -10, duration: 0.5, stagger: 0.08, clearProps: 'all' }, '-=0.3');
-  }, { scope: containerRef });
+  // Page entrance (shared motion settings)
+  useGSAP(
+    () => {
+      playEntrance(['.entry-header', '.entry-list-item', '.entry-meta']);
+    },
+    { scope: containerRef }
+  );
+
+  // Soft swap when a different entry is selected
+  useGSAP(
+    () => {
+      if (lastSelected.current === selectedEntry) return;
+      lastSelected.current = selectedEntry;
+      playSwap('.entry-swap');
+    },
+    { scope: containerRef, dependencies: [selectedEntry] }
+  );
+
+  const mutedLabel = isDarkMode ? 'opacity-50' : 'opacity-60';
 
   return (
-    <div ref={containerRef} className={`w-full px-[10px] md:px-6 lg:px-10 pt-4 flex flex-col ${isDarkMode ? 'text-white bg-black' : 'text-black bg-white'}`}>
-      
-      {/* Header Section */}
-      <div className="mb-6">
-        <div className="entry-subtitle text-[7px] md:text-[8px] tracking-[0.4em] uppercase opacity-60 mb-2">
-          {entries[selectedEntry].status} // ARTIFACT_ARCHIVE
+    <div
+      ref={containerRef}
+      className={`flex w-full flex-1 flex-col px-[10px] pb-16 pt-4 md:px-6 md:pb-20 lg:px-10 ${
+        isDarkMode ? 'text-white bg-black' : 'text-black bg-white'
+      }`}
+    >
+      {/* Header */}
+      <div className="entry-header mb-6">
+        <div className="entry-swap mb-2 text-[7px] uppercase tracking-[0.4em] opacity-60 md:text-[8px]">
+          {selected.status} // ARTIFACT_ARCHIVE
         </div>
-        <h1 className="entry-title text-[1.75rem] md:text-[2rem] lg:text-[2.5rem] font-[100] uppercase tracking-[0.05em] leading-none mb-2">
-          {entries[selectedEntry].label}
+        <h1 className="entry-swap mb-2 text-[1.75rem] font-[100] uppercase leading-none tracking-[0.05em] md:text-[2rem] lg:text-[2.5rem]">
+          {selected.label}
         </h1>
-        <p className="text-[7px] md:text-[8px] tracking-[0.15em] uppercase opacity-50 leading-relaxed max-w-md">
-          {entries[selectedEntry].description}
+        <p className="entry-swap max-w-md text-[7px] uppercase leading-relaxed tracking-[0.15em] opacity-50 md:text-[8px]">
+          {selected.description}
         </p>
       </div>
 
-      {/* List Section - Fixed height, scrolling internally */}
-      <div className="overflow-y-auto pr-2 mb-6 scrollbar-thin" 
-      style={{ height: '300px' }}
-      >
+      {/* List: sized by its content, scrolls only if it gets long */}
+      <div className="scrollbar-thin mb-10 max-h-[min(40vh,420px)] max-w-xl overflow-y-auto pr-2">
+        <div className="space-y-1 pb-1">
+          {entries.map((entry, i) => {
+            const isSelected = selectedEntry === i;
 
-        <div className="space-y-1 max-w-xl pb-4">
-          {entries.map((entry, i) => (
-            <button
-              key={i}
-              onClick={() => {
-                setSelectedEntry(i);              }}
-              className="entry-list-item w-full text-left transition-all duration-300 group"
-            >
-              <div className={`border transition-all duration-300 p-3 md:p-4 ${
-                selectedEntry === i 
-                  ? `${isDarkMode ? 'border-white' : 'border-black'} bg-transparent`
-                  : `${isDarkMode ? 'border-zinc-800 hover:border-zinc-600 bg-zinc-900/40' : 'border-zinc-300 hover:border-zinc-400 bg-zinc-100/40'}`
-              }`}>
-                <div className="flex items-center justify-between">
-                  <span className={`text-[10px] md:text-[11px] tracking-[0.25em] font-mono ${
-                    selectedEntry === i ? 'opacity-100' : 'opacity-70'
-                  }`}>
-                    {entry.label}
-                  </span>
-                  <span className={`text-[7px] tracking-[0.2em] px-2 py-1 border ${
-                    isDarkMode ? 'border-zinc-800' : 'border-zinc-300'
-                  }`}>
-                    {entry.type.toUpperCase()}
-                  </span>
-                  {selectedEntry === i && (
-                    <span className={`text-[7px] tracking-[0.3em] uppercase ${isDarkMode ? 'opacity-100' : 'opacity-50'}`}>◉</span>
-                  )}
+            return (
+              <button
+                key={entry.id}
+                type="button"
+                onClick={() => setSelectedEntry(i)}
+                aria-pressed={isSelected}
+                className="entry-list-item group w-full text-left"
+              >
+                <div
+                  className={`border p-3 transition-colors duration-300 md:p-4 ${
+                    isSelected
+                      ? `${isDarkMode ? 'border-white' : 'border-black'} bg-transparent`
+                      : isDarkMode
+                        ? 'border-zinc-800 bg-zinc-900/40 hover:border-zinc-600'
+                        : 'border-zinc-300 bg-zinc-100/40 hover:border-zinc-400'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span
+                      className={`font-mono text-[10px] tracking-[0.25em] md:text-[11px] ${
+                        isSelected ? 'opacity-100' : 'opacity-70'
+                      }`}
+                    >
+                      {entry.label}
+                    </span>
+
+                    {/* Badge + marker sit in one group so the badge never shifts on select */}
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`border px-2 py-1 text-[7px] tracking-[0.2em] ${
+                          isDarkMode ? 'border-zinc-800' : 'border-zinc-300'
+                        }`}
+                      >
+                        {entry.type.toUpperCase()}
+                      </span>
+                      <span
+                        aria-hidden="true"
+                        className={`w-2 text-[7px] transition-opacity duration-300 ${
+                          isSelected
+                            ? isDarkMode
+                              ? 'opacity-100'
+                              : 'opacity-50'
+                            : 'opacity-0'
+                        }`}
+                      >
+                        ◉
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </button>
-          ))}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Bottom Section */}
-      <div className="border-t border-zinc-800 pt-4">
-        {/* Metadata Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-[7px] tracking-[0.2em] uppercase">
-          <div className={`${isDarkMode ? 'opacity-50' : 'opacity-60'}`}>ID_CODE</div>
-          <div className="font-mono opacity-100">{entries[selectedEntry].id}</div>
-          <div className="md:col-span-1"></div>
-          <div className={`${isDarkMode ? 'opacity-50' : 'opacity-60'}`}>STATUS</div>
-          <div className="font-mono opacity-100">{entries[selectedEntry].status}</div>
-          <div className="md:col-span-1"></div>
-          <div className={`${isDarkMode ? 'opacity-50' : 'opacity-60'}`}>TIMESTAMP</div>
-          <div className="md:col-span-2 font-mono opacity-100">{entries[selectedEntry].timestamp}</div>
-        </div>
+      {/* Bottom section: pinned to the bottom of the viewport area */}
+      <div
+        className={`entry-meta mt-auto border-t pt-4 ${
+          isDarkMode ? 'border-zinc-800' : 'border-zinc-300'
+        }`}
+      >
+        <dl className="grid max-w-xl grid-cols-[7rem_1fr] gap-y-2 text-[7px] uppercase tracking-[0.2em] md:grid-cols-[9rem_1fr]">
+          <dt className={mutedLabel}>ID_CODE</dt>
+          <dd className="entry-swap font-mono">{selected.id}</dd>
 
-        {/* Action Buttons */}
-        <div className="flex gap-2 mt-3">
-          {entries[selectedEntry].downloadUrl && entries[selectedEntry].downloadUrl !== '#' && (
-            <a 
-              href={entries[selectedEntry].sourceUrl}
+          <dt className={mutedLabel}>STATUS</dt>
+          <dd className="entry-swap font-mono">{selected.status}</dd>
+
+          <dt className={mutedLabel}>TIMESTAMP</dt>
+          <dd className="entry-swap font-mono">{selected.timestamp}</dd>
+        </dl>
+
+        <div className="mt-3 flex gap-2">
+          {hasSource && (
+            <a
+              href={selected.sourceUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[7px] tracking-[0.2em] uppercase opacity-60 hover:opacity-100 border border-current/20 px-3 py-1.5 transition-all"
+              className="border border-current/20 px-3 py-1.5 text-[7px] uppercase tracking-[0.2em] opacity-60 transition-opacity hover:opacity-100"
             >
               ↗ VISIT
             </a>
           )}
-         {/* VIEW button */}
-            <button
-              onClick={() => onNavigateToDetail?.(entries[selectedEntry].id)}
-              className="text-[7px] tracking-[0.2em] uppercase opacity-60 hover:opacity-100 border border-current/20 px-3 py-1.5 transition-all"
-            >
-              VIEW
-            </button>
+
+          <button
+            type="button"
+            onClick={() => onNavigateToDetail?.(selected.id)}
+            className="border border-current/20 px-3 py-1.5 text-[7px] uppercase tracking-[0.2em] opacity-60 transition-opacity hover:opacity-100"
+          >
+            VIEW
+          </button>
         </div>
       </div>
     </div>

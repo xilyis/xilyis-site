@@ -17,6 +17,7 @@ import WritingArticle from './components/WritingArticle';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import { FEATURES, isViewEnabled } from './featureFlags';
+import { getArtifactById } from './artifactData';
 
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
@@ -31,32 +32,6 @@ type View =
   | 'writingArticle';
 
 type DetailView = 'detail' | 'info' | null;
-
-interface TabSection {
-  id: string;
-  label: string;
-  content: string;
-}
-
-interface GalleryMediaItem {
-  id: string;
-  label: string;
-  description: string;
-  media: string[];
-  tabSections: TabSection[];
-  metadata: Record<string, string>;
-}
-
-interface ArtifactEntry {
-  id: string;
-  label: string;
-  status: string;
-  timestamp: string;
-  thumbnail: string;
-  sourceUrl: string;
-  type: 'python' | 'web' | 'other';
-  galleryMedia: GalleryMediaItem[];
-}
 
 const App: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -79,127 +54,6 @@ const App: React.FC = () => {
   const leftLineRef = useRef<HTMLDivElement>(null);
   const rightLineRef = useRef<HTMLDivElement>(null);
   const mainContentRef = useRef<HTMLDivElement>(null);
-
-  /*
-   * Keep your existing ArtifactEntry[] data here.
-   */
-  const entries: ArtifactEntry[] = [
-    {
-      id: '01',
-      label: 'ENTRY 01',
-      status: 'ACTIVE',
-      timestamp: '2024.08.11',
-      thumbnail: '/assets/sacred-patterns-thumb.png',
-      sourceUrl: 'https://github.com/you/repo/blob/main/SacredPatterns.py',
-      type: 'python',
-      galleryMedia: [
-        {
-          id: '01-01',
-          label: 'GALLERY MEDIA 01',
-          description: 'First gallery item description',
-          media: [
-            '/assets/gm1-sub1.png',
-            '/assets/gm1-sub2.png',
-            '/assets/gm1-sub3.png',
-          ],
-          tabSections: [
-            {
-              id: 'overview',
-              label: 'OVERVIEW',
-              content: 'Overview for gallery media 01.',
-            },
-            {
-              id: 'process',
-              label: 'PROCESS',
-              content: 'Process details for gallery media 01.',
-            },
-            {
-              id: 'tech',
-              label: 'TECHNICAL',
-              content: 'Technical specs for gallery media 01.',
-            },
-          ],
-          metadata: {
-            Resolution: '1920x1080',
-            Format: 'PNG',
-            Size: '2.3 MB',
-          },
-        },
-        {
-          id: '01-02',
-          label: 'GALLERY MEDIA 02',
-          description: 'Second gallery item description',
-          media: [
-            '/assets/gm2-sub1.png',
-            '/assets/gm2-sub2.png',
-          ],
-          tabSections: [
-            {
-              id: 'overview',
-              label: 'OVERVIEW',
-              content: 'Overview for gallery media 02.',
-            },
-            {
-              id: 'process',
-              label: 'PROCESS',
-              content: 'Process details for gallery media 02.',
-            },
-            {
-              id: 'tech',
-              label: 'TECHNICAL',
-              content: 'Technical specs for gallery media 02.',
-            },
-          ],
-          metadata: {
-            Resolution: '1920x1080',
-            Format: 'PNG',
-            Size: '1.8 MB',
-          },
-        },
-      ],
-    },
-    {
-      id: '02',
-      label: 'ENTRY 02',
-      status: 'VER_2',
-      timestamp: '2024.03.15',
-      thumbnail: '/assets/default-placeholder.png',
-      sourceUrl: '#',
-      type: 'python',
-      galleryMedia: [
-        {
-          id: '02-01',
-          label: 'GALLERY MEDIA 01',
-          description: 'Entry 02 gallery media 01',
-          media: [
-            '/assets/entry02-gm1-1.png',
-            '/assets/entry02-gm1-2.png',
-          ],
-          tabSections: [
-            {
-              id: 'overview',
-              label: 'OVERVIEW',
-              content: 'Entry 02 overview.',
-            },
-            {
-              id: 'process',
-              label: 'PROCESS',
-              content: 'Entry 02 process.',
-            },
-            {
-              id: 'tech',
-              label: 'TECHNICAL',
-              content: 'Entry 02 technical.',
-            },
-          ],
-          metadata: {
-            Status: 'Under Development',
-            Version: '2.0',
-          },
-        },
-      ],
-    },
-  ];
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -306,9 +160,8 @@ const App: React.FC = () => {
 
     gsap.to(mainContentRef.current, {
       opacity: 0,
-      y: 10,
-      duration: 0.4,
-      ease: 'power2.inOut',
+      duration: 0.25,
+      ease: 'power2.in',
       onComplete: () => {
         setCurrentView(view);
         setSelectedArtifactId(undefined);
@@ -321,9 +174,8 @@ const App: React.FC = () => {
         if (mainContentRef.current) {
           gsap.to(mainContentRef.current, {
             opacity: 1,
-            y: 0,
-            duration: 0.8,
-            ease: 'power3.out',
+            duration: 0.35,
+            ease: 'power2.out',
           });
         }
       },
@@ -335,11 +187,7 @@ const App: React.FC = () => {
   };
 
   const getCurrentGalleryMediaItems = () => {
-    const entry = entries.find(
-      (item) => item.id === selectedArtifactId
-    );
-
-    return entry?.galleryMedia || [];
+    return getArtifactById(selectedArtifactId)?.galleryMedia ?? [];
   };
 
   const renderContent = () => {
@@ -421,7 +269,12 @@ const App: React.FC = () => {
         return <Studies isDarkMode={isDarkMode} />;
 
       case 'contact':
-        return <Contact isDarkMode={isDarkMode} />;
+        return (
+          <Contact
+            isDarkMode={isDarkMode}
+            onNavigate={navigateTo}
+          />
+        );
 
       case 'writings':
         return (
