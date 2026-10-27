@@ -3,13 +3,17 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { useForm, ValidationError } from '@formspree/react';
 import PageFooter from './PageFooter';
+import { MOTION, prefersReducedMotion } from '../motion';
 
 
 interface ContactProps {
   isDarkMode: boolean;
+  onNavigate: (
+    view: 'hero' | 'about' | 'artifacts' | 'studies' | 'contact' | 'writings'
+  ) => void;
 }
 
-const Contact: React.FC<ContactProps> = ({ isDarkMode }) => {
+const Contact: React.FC<ContactProps> = ({ isDarkMode, onNavigate }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   
   const [state, handleSubmit] = useForm('xrpzqlbe'); // Your Formspree ID
@@ -22,33 +26,39 @@ const Contact: React.FC<ContactProps> = ({ isDarkMode }) => {
   });
 
   useGSAP(() => {
-    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+    if (prefersReducedMotion()) return;
 
-    tl.from('.contact-title', { 
-      y: 60, 
-      opacity: 0, 
-      duration: 1.2,
-      stagger: 0.1
+    const tl = gsap.timeline({ defaults: { ease: MOTION.ease } });
+    const settle = 'opacity,transform';
+
+    tl.from('.contact-title', {
+      y: MOTION.offset,
+      opacity: 0,
+      duration: MOTION.base,
+      stagger: MOTION.stagger,
+      clearProps: settle,
     })
-    .from('.contact-line', {
-      scaleX: 0,
-      transformOrigin: 'left',
-      duration: 1.5,
-      ease: 'expo.out'
-    }, '-=0.8')
-    .from('.contact-info-item', { 
-      y: 20, 
-      opacity: 0, 
-      duration: 0.8, 
-      stagger: 0.1 
-    }, '-=1')
-    .from('.contact-input-group', { 
-      x: 20, 
-      opacity: 0, 
-      duration: 1, 
-      stagger: 0.1 
-    }, '-=0.8');
-
+      .from(
+        '.contact-line',
+        {
+          scaleX: 0,
+          transformOrigin: 'left',
+          duration: MOTION.line,
+          clearProps: 'transform',
+        },
+        '-=0.5'
+      )
+      .from(
+        '.contact-input-group',
+        {
+          y: MOTION.offset,
+          opacity: 0,
+          duration: MOTION.base,
+          stagger: MOTION.stagger,
+          clearProps: settle,
+        },
+        '-=0.5'
+      );
   }, { scope: containerRef });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -204,7 +214,7 @@ const Contact: React.FC<ContactProps> = ({ isDarkMode }) => {
 
               {/* PAGE FOOTER */}
                 <div className="mt-24">
-                  <PageFooter isDarkMode={isDarkMode} />
+                  <PageFooter isDarkMode={isDarkMode} onNavigate={onNavigate} />
                 </div>
 
     </div>

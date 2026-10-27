@@ -1,9 +1,9 @@
-
 import React, { useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import PageFooter from './PageFooter';
+import { MOTION, prefersReducedMotion } from '../motion';
 gsap.registerPlugin(ScrollTrigger);
 
 interface Capability {
@@ -15,7 +15,7 @@ interface Capability {
 
 interface AboutProps {
   isDarkMode: boolean;
-  onNavigate: (view: 'hero' | 'about' | 'artifacts' | 'contact' | 'writings'| 'writingArticle') => void;
+  onNavigate: (view: 'hero' | 'about' | 'artifacts' | 'studies' | 'contact' | 'writings') => void;
 }
 
 const About: React.FC<AboutProps> = ({ isDarkMode, onNavigate }) => {
@@ -23,54 +23,50 @@ const About: React.FC<AboutProps> = ({ isDarkMode, onNavigate }) => {
   const manifestoContainerRef = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
+    if (prefersReducedMotion()) return;
+
     // Reveal animations for section contents
-    const revealItems = containerRef.current?.querySelectorAll('.about-reveal');
-    if (revealItems) {
-      revealItems.forEach((item) => {
-        gsap.from(item, {
-          opacity: 0,
-          y: 48, // Scaled down from 60
-          duration: 1.5,
-          ease: 'expo.out',
-          scrollTrigger: {
-            trigger: item,
-            start: 'top 92%',
-            toggleActions: 'play none none none'
-          }
-        });
+    containerRef.current?.querySelectorAll('.about-reveal').forEach((item) => {
+      gsap.from(item, {
+        opacity: 0,
+        y: MOTION.scrollOffset,
+        duration: MOTION.scroll,
+        ease: MOTION.ease,
+        clearProps: 'opacity,transform',
+        scrollTrigger: {
+          trigger: item,
+          start: 'top 92%',
+          toggleActions: 'play none none none',
+        },
       });
-    }
+    });
 
     // Horizontal line expansion animations
-    const lines = containerRef.current?.querySelectorAll('.reveal-line');
-    if (lines) {
-      lines.forEach((line) => {
-        gsap.from(line, {
-          scaleX: 0,
-          transformOrigin: 'left',
-          duration: 2,
-          ease: 'power4.inOut',
-          scrollTrigger: {
-            trigger: line,
-            start: 'top 98%',
-          }
-        });
+    containerRef.current?.querySelectorAll('.reveal-line').forEach((line) => {
+      gsap.from(line, {
+        scaleX: 0,
+        transformOrigin: 'left',
+        duration: MOTION.line,
+        ease: MOTION.ease,
+        clearProps: 'transform',
+        scrollTrigger: {
+          trigger: line,
+          start: 'top 98%',
+        },
       });
-    }
+    });
 
-    const coords = containerRef.current?.querySelectorAll('.coord-text');
-    if (coords) {
-      coords.forEach((coord) => {
-        gsap.to(coord, {
-          y: -40, 
-          ease: 'none',
-          scrollTrigger: {
-            trigger: coord,
-            scrub: true,
-          }
-        });
+    // Subtle parallax on the coordinate labels
+    containerRef.current?.querySelectorAll('.coord-text').forEach((coord) => {
+      gsap.to(coord, {
+        y: -40,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: coord,
+          scrub: true,
+        },
       });
-    }
+    });
   }, { scope: containerRef });
 
   return (
