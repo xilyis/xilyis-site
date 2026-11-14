@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { getWritingBySlug, writings } from './writingData';
+import { SITE_NAME } from '../siteConfig';
 
 interface WritingArticleProps {
   slug: string;
@@ -19,7 +20,7 @@ const WritingArticle: React.FC<WritingArticleProps> = ({
   useEffect(() => {
     if (!writing) return;
 
-    document.title = `${writing.title} — XILYAS`;
+    document.title = `${writing.title} — ${SITE_NAME}`;
 
     const description = writing.excerpt;
     let meta = document.querySelector(

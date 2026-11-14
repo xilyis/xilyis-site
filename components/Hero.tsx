@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { FEATURES } from '../featureFlags';
+import { HERO_LINKS, SITE_NAME, hasLink } from '../siteConfig';
 
 interface HeroProps {
   isDarkMode: boolean;
@@ -118,7 +119,7 @@ const Hero: React.FC<HeroProps> = ({ isDarkMode, onNavigate }) => {
           ref={titleRef}
           className="text-[14vw] sm:text-[10vw] md:text-[6.5rem] lg:text-[7.5rem] uppercase font-[100] tracking-[0.25em] md:tracking-[0.3em] leading-[0.95] select-none translate-y-full"
         >
-          XILYIS
+          {SITE_NAME}
         </h1>
       </div>
 
@@ -168,20 +169,43 @@ const Hero: React.FC<HeroProps> = ({ isDarkMode, onNavigate }) => {
       {/* Micro-details */}
       <div 
         ref={detailsRef}
-        className="flex flex-col md:flex-row justify-center items-center gap-y-4 md:gap-x-12 text-[7px] tracking-[0.35em] md:tracking-[0.4em] uppercase font-bold mt-[10px] opacity-30"
+        className={`flex flex-col md:flex-row justify-center items-center gap-y-4 md:gap-x-12 text-[7px] tracking-[0.35em] md:tracking-[0.4em] uppercase font-bold mt-[10px] opacity-30 ${
+          HERO_LINKS.length === 0 ? 'hidden' : ''
+        }`}
       >
-        <div className="flex items-center gap-3 group cursor-default">
-          <div className="hidden md:block w-8 h-px bg-current opacity-20 group-hover:w-12 group-hover:opacity-100 transition-all duration-700"></div>
-          <span className="opacity-50 group-hover:opacity-100 transition-opacity duration-500">Link_01</span>
-        </div>
-        <div className="flex items-center gap-3 group cursor-default">
-          <div className="hidden md:block w-8 h-px bg-current opacity-20 group-hover:w-12 group-hover:opacity-100 transition-all duration-700"></div>
-          <span className="opacity-50 group-hover:opacity-100 transition-opacity duration-500">Link_02</span>
-        </div>
-        <div className="flex items-center gap-3 group cursor-default">
-          <div className="hidden md:block w-8 h-px bg-current opacity-20 group-hover:w-12 group-hover:opacity-100 transition-all duration-700"></div>
-          <span className="opacity-50 group-hover:opacity-100 transition-opacity duration-500">Link_03</span>
-        </div>
+        {HERO_LINKS.map((link) => {
+          const content = (
+            <>
+              <div className="hidden md:block w-8 h-px bg-current opacity-20 group-hover:w-12 group-hover:opacity-100 transition-all duration-700"></div>
+              <span className="opacity-50 group-hover:opacity-100 transition-opacity duration-500">{link.label}</span>
+              {/* A single link is framed on both sides: — LABEL — */}
+              {HERO_LINKS.length === 1 && (
+                <div className="hidden md:block w-8 h-px bg-current opacity-20 group-hover:w-12 group-hover:opacity-100 transition-all duration-700"></div>
+              )}
+            </>
+          );
+
+          // No url yet: plain text, exactly as before
+          if (!hasLink(link.url)) {
+            return (
+              <div key={link.label} className="flex items-center gap-3 group cursor-default">
+                {content}
+              </div>
+            );
+          }
+
+          const isMail = link.url.startsWith('mailto:');
+          return (
+            <a
+              key={link.label}
+              href={link.url}
+              {...(isMail ? {} : { target: '_blank', rel: 'noopener noreferrer' })}
+              className="flex items-center gap-3 group"
+            >
+              {content}
+            </a>
+          );
+        })}
       </div>
     </div>
   );

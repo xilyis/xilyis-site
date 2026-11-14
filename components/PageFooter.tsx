@@ -1,5 +1,14 @@
 import React from 'react';
 import { FEATURES } from '../featureFlags';
+import {
+  COPYRIGHT_START_YEAR,
+  LEGAL_LINKS,
+  SITE_EMAIL,
+  SITE_NAME,
+  SITE_REGION,
+  SOCIAL_LINKS,
+  hasLink,
+} from '../siteConfig';
 
 type PageView =
   | 'hero'
@@ -19,10 +28,18 @@ const PageFooter: React.FC<PageFooterProps> = ({
   onNavigate,
 }) => {
   const textColor = isDarkMode ? 'text-white' : 'text-black';
+  const hairline = isDarkMode ? 'border-zinc-800' : 'border-zinc-300';
+
+  const year = new Date().getFullYear();
+  const copyrightYears =
+    year > COPYRIGHT_START_YEAR ? `${COPYRIGHT_START_YEAR}–${year}` : `${year}`;
+  // Pages re-render every second (App clock), so this stays live
+  const utcTime = new Date().toISOString().slice(11, 19);
+  const linkClass = 'transition-opacity hover:opacity-100';
 
   return (
     <div
-      className={`w-full border-t border-current/10 pt-8 pb-0 ${textColor}`}
+      className={`w-full border-t pt-8 pb-0 ${hairline} ${textColor}`}
     >
       <div className="mb-8 grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-12 lg:grid-cols-4">
         {/* COLUMN 1: Navigation */}
@@ -97,28 +114,22 @@ const PageFooter: React.FC<PageFooterProps> = ({
 
           <ul className="space-y-3 text-[7px] uppercase tracking-[0.2em] opacity-40">
             <li>
-              <a
-                href="mailto:info@xilyas.com"
-                className="transition-opacity hover:opacity-100"
-              >
+              <a href={`mailto:${SITE_EMAIL}`} className={linkClass}>
                 Email
               </a>
             </li>
-            <li>
-              <a href="#" className="transition-opacity hover:opacity-100">
-                Instagram
-              </a>
-            </li>
-            <li>
-              <a href="#" className="transition-opacity hover:opacity-100">
-                Twitter/X
-              </a>
-            </li>
-            <li>
-              <a href="#" className="transition-opacity hover:opacity-100">
-                LinkedIn
-              </a>
-            </li>
+            {SOCIAL_LINKS.filter((link) => hasLink(link.url)).map((link) => (
+              <li key={link.label}>
+                <a
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={linkClass}
+                >
+                  {link.label}
+                </a>
+              </li>
+            ))}
           </ul>
         </div>
 
@@ -129,23 +140,17 @@ const PageFooter: React.FC<PageFooterProps> = ({
           </h3>
 
           <ul className="space-y-3 text-[7px] uppercase tracking-[0.2em] opacity-40">
+            {LEGAL_LINKS.filter((link) => hasLink(link.url)).map((link) => (
+              <li key={link.label}>
+                <a href={link.url} className={linkClass}>
+                  {link.label}
+                </a>
+              </li>
+            ))}
             <li>
-              <a href="#" className="transition-opacity hover:opacity-100">
-                Privacy Policy
-              </a>
-            </li>
-            <li>
-              <a href="#" className="transition-opacity hover:opacity-100">
-                Terms of Service
-              </a>
-            </li>
-            <li>
-              <a href="#" className="transition-opacity hover:opacity-100">
-                Cookie Notice
-              </a>
-            </li>
-            <li>
-              <span className="cursor-default">© 2024 XILYAS</span>
+              <span className="cursor-default">
+                © {copyrightYears} {SITE_NAME}
+              </span>
             </li>
           </ul>
         </div>
@@ -159,17 +164,17 @@ const PageFooter: React.FC<PageFooterProps> = ({
           <ul className="space-y-3 text-[7px] uppercase tracking-[0.2em] opacity-40">
             <li className="cursor-default">v1.0.0</li>
             <li className="cursor-default">
-              UTC: <span className="font-mono">14:23:45</span>
+              UTC: <span className="font-mono">{utcTime}</span>
             </li>
-            <li className="cursor-default">Region: JP-Tokyo</li>
+            <li className="cursor-default">Region: {SITE_REGION}</li>
             <li className="cursor-default">Status: Online</li>
           </ul>
         </div>
       </div>
 
       {/* Bottom Bar */}
-      <div className="flex flex-col items-center justify-between border-t border-current/10 pt-6 text-[6px] uppercase tracking-[0.2em] opacity-30 md:flex-row">
-        <div>XILYAS // ARCHIVE</div>
+      <div className={`flex flex-col items-center justify-between border-t pt-6 text-[6px] uppercase tracking-[0.2em] opacity-30 md:flex-row ${hairline}`}>
+        <div>{SITE_NAME} // ARCHIVE</div>
         <div>All artifacts protected under digital copyright law.</div>
       </div>
     </div>

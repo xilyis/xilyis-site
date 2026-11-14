@@ -3,6 +3,7 @@ import { Globe, Menu, X } from 'lucide-react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { isViewEnabled } from '../featureFlags';
+import { SITE_NAME } from '../siteConfig';
 
 interface NavbarProps {
   currentTime: Date;
@@ -148,7 +149,7 @@ const Navbar: React.FC<NavbarProps> = ({ currentTime, isDarkMode, onNavigate, cu
 
            {/* Footer inside Menu */}
            <div className="h-20 flex items-center justify-between px-6 md:px-10 border-t border-current/10 text-[9px] tracking-[0.2em] uppercase opacity-40">
-              <span>XILYIS</span>
+              <span>{SITE_NAME}</span>
               <span>{formatTime(currentTime)}</span>
            </div>
         </div>

@@ -4,6 +4,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import PageFooter from './PageFooter';
 import { MOTION, prefersReducedMotion } from '../motion';
+import { SITE_NAME } from '../siteConfig';
 gsap.registerPlugin(ScrollTrigger);
 
 interface Capability {
@@ -84,14 +85,14 @@ const About: React.FC<AboutProps> = ({ isDarkMode, onNavigate }) => {
         <div className="flex flex-col md:flex-row gap-10 md:gap-20 items-start">
           <div className="flex-1">
             <h2 className="about-reveal text-[14vw] sm:text-[10vw] md:text-[6.5rem] lg:text-[7.5rem] uppercase font-[100] tracking-[0.25em] md:tracking-[0.3em] leading-[0.95] mb-10 select-none">
-              XILYIS
+              {SITE_NAME}
             </h2>
             <div className="max-w-[360px] space-y-5 about-reveal">
               <p className="text-[9px] md:text-[11px] leading-[2] tracking-[0.12em] uppercase font-light opacity-80">
                 A multidisciplinary entity operating at the intersection of generative algorithms and visceral human expression. 
               </p>
               <p className="text-[7.5px] md:text-[8.5px] leading-[2.2] tracking-[0.18em] uppercase opacity-35 font-medium">
-                XILYAS synthesizes latent space potentials into tangible artifacts. By bridging the gap between carbon-based intuition and silicon-based logic, the work explores emergent properties of the digital unconscious.
+                {SITE_NAME} synthesizes latent space potentials into tangible artifacts. By bridging the gap between carbon-based intuition and silicon-based logic, the work explores emergent properties of the digital unconscious.
               </p>
             </div>
           </div>
