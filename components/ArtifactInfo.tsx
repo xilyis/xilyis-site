@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useGSAP } from '@gsap/react';
 import { playEntrance, playSwap } from '../motion';
 import type { GalleryMediaItem } from '../artifactData';
+import { asset } from '../siteConfig';
 
 interface ArtifactInfoProps {
   isDarkMode: boolean;
@@ -31,7 +32,7 @@ const ArtifactInfo: React.FC<ArtifactInfoProps> = ({
 
   const currentGalleryMedia =
     galleryMediaItems[currentGalleryMediaIndex] || galleryMediaItems[0];
-  const subMedia = currentGalleryMedia?.media ?? [];
+  const subMedia = (currentGalleryMedia?.media ?? []).map(asset);
   const currentSubMedia = subMedia[activeSubMediaIndex] ?? '';
   const itemCount = galleryMediaItems.length;
 

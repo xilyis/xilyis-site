@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { useGSAP } from '@gsap/react';
 import { playEntrance } from '../motion';
 import { artifacts, getArtifactById } from '../artifactData';
+import { asset, hasLink } from '../siteConfig';
 
 interface ArtifactDetailProps {
   isDarkMode: boolean;
@@ -23,8 +24,8 @@ const ArtifactDetail: React.FC<ArtifactDetailProps> = ({
   const [tooltipVisible, setTooltipVisible] = useState(true);
 
   const entry = getArtifactById(artifactId) ?? artifacts[0];
-  const media = entry.media.length ? entry.media : [entry.thumbnail];
-  const hasSource = Boolean(entry.sourceUrl) && entry.sourceUrl !== '#';
+  const media = (entry ? (entry.media.length ? entry.media : [entry.thumbnail]) : []).map(asset);
+  const hasSource = hasLink(entry?.sourceUrl);
 
   useEffect(() => {
     setActiveThumbnailIndex(0);
@@ -36,6 +37,8 @@ const ArtifactDetail: React.FC<ArtifactDetailProps> = ({
   }, []);
 
   useEffect(() => {
+    if (!media.length) return;
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight') {
         e.preventDefault();
@@ -83,6 +86,9 @@ const ArtifactDetail: React.FC<ArtifactDetailProps> = ({
         ? 'border-zinc-700 hover:border-zinc-500'
         : 'border-zinc-300 hover:border-zinc-400'
     }`;
+
+  // Unknown id (for example after entries were removed): render nothing
+  if (!entry) return null;
 
   return (
     <div
