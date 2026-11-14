@@ -62,3 +62,8 @@ export const playSwap = (targets: gsap.TweenTarget) => {
     clearProps: 'opacity,transform',
   });
 };
+
+/** Hover-capable pointer (mouse/trackpad) as opposed to touch. */
+export const canHover = (): boolean =>
+  typeof window !== 'undefined' &&
+  window.matchMedia('(hover: hover) and (pointer: fine)').matches;
