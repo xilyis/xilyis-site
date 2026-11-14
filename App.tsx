@@ -16,11 +16,16 @@ import Writings from './components/Writings';
 import WritingArticle from './components/WritingArticle';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
+import Loader from './components/Loader';
 import { FEATURES, isViewEnabled } from './featureFlags';
 import { getArtifactById } from './artifactData';
 
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
+
+// The site can be hosted under a sub-path (vite.config.ts `base`, e.g. '/xilyis-site/'),
+// so URLs the app writes or reads include it. Empty string when hosted at the root.
+const BASE_PATH = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 type View =
   | 'hero'
@@ -36,6 +41,9 @@ type DetailView = 'detail' | 'info' | null;
 const App: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isDarkMode, setIsDarkMode] = useState(true);
+  // Loader: `isLoaded` mounts the page, `showLoader` removes the overlay afterwards
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [showLoader, setShowLoader] = useState(true);
   const [currentView, setCurrentView] = useState<View>('hero');
 
   const [selectedArtifactId, setSelectedArtifactId] = useState<
@@ -65,15 +73,19 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const resolveWritingRoute = () => {
+      // Path relative to the base, e.g. '/xilyis-site/writing' -> '/writing'
+      const fullPath = window.location.pathname;
+      const pathname = fullPath.startsWith(BASE_PATH)
+        ? fullPath.slice(BASE_PATH.length) || '/'
+        : fullPath;
+
       // Writings is hidden: send direct /writing URLs back to the home page.
       if (!FEATURES.writings) {
-        if (window.location.pathname.startsWith('/writing')) {
-          window.history.replaceState({}, '', '/');
+        if (pathname.startsWith('/writing')) {
+          window.history.replaceState({}, '', `${BASE_PATH}/`);
         }
         return;
       }
-
-      const pathname = window.location.pathname;
 
       const articleMatch = pathname.match(/^\/writing\/([^/]+)$/);
 
@@ -128,14 +140,14 @@ const App: React.FC = () => {
   const openWritingIndex = () => {
     setSelectedWritingSlug(null);
     setCurrentView('writings');
-    window.history.pushState({}, '', '/writing');
+    window.history.pushState({}, '', `${BASE_PATH}/writing`);
     window.scrollTo(0, 0);
   };
 
   const openWritingArticle = (slug: string) => {
     setSelectedWritingSlug(slug);
     setCurrentView('writingArticle');
-    window.history.pushState({}, '', `/writing/${slug}`);
+    window.history.pushState({}, '', `${BASE_PATH}/writing/${slug}`);
     window.scrollTo(0, 0);
   };
 
@@ -266,7 +278,12 @@ const App: React.FC = () => {
         );
 
       case 'studies':
-        return <Studies isDarkMode={isDarkMode} />;
+        return (
+          <Studies
+            isDarkMode={isDarkMode}
+            onNavigate={navigateTo}
+          />
+        );
 
       case 'contact':
         return (
@@ -318,6 +335,13 @@ const App: React.FC = () => {
           : 'bg-white text-black'
       }`}
     >
+      {showLoader && (
+        <Loader
+          onReveal={() => setIsLoaded(true)}
+          onComplete={() => setShowLoader(false)}
+        />
+      )}
+
       <div className="grain" />
 
       <div
@@ -349,7 +373,7 @@ const App: React.FC = () => {
             : 'pb-[10px]'
         }`}
       >
-        {renderContent()}
+        {isLoaded && renderContent()}
       </main>
 
       <Footer
