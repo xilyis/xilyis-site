@@ -15,7 +15,7 @@ export interface Features {
 
 export const FEATURES: Features = {
   // Manual: set true when the articles are finished.
-  writings: false,
+  writings: true,
   // Automatic: on as soon as there is at least one entry. Replace the
   // expression with `false` to force a page hidden, or `true` to force it on.
   studies: studies.length > 0,

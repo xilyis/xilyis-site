@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { writings } from './writingData';
+import React, { useMemo, useState } from 'react';
+import FilterDropdown from './FilterDropdown';
+import { hasLink } from '../siteConfig';
+import { WRITING_KINDS, writings } from './writingData';
 
 interface WritingsProps {
   isDarkMode: boolean;
@@ -12,11 +14,36 @@ const Writings: React.FC<WritingsProps> = ({
   onOpenWriting,
   onBack,
 }) => {
+  const [filter, setFilter] = useState<string>('all');
   const [active, setActive] = useState<number | null>(null);
 
   const structureLine = isDarkMode ? 'border-zinc-800' : 'border-zinc-300';
   const rowLine = isDarkMode ? 'border-zinc-900' : 'border-zinc-200';
   const underline = isDarkMode ? 'bg-zinc-500' : 'bg-zinc-600';
+
+  // Filter options are built from the data: only kinds that have entries.
+  const groups = useMemo(() => {
+    const present = WRITING_KINDS.filter((kind) =>
+      writings.some((w) => w.kind === kind),
+    );
+    return [
+      {
+        label: 'Kind',
+        options: [
+          { id: 'all', label: 'All', count: writings.length },
+          ...present.map((kind) => ({
+            id: `kind:${kind}`,
+            label: kind,
+            count: writings.filter((w) => w.kind === kind).length,
+          })),
+        ],
+      },
+    ];
+  }, []);
+
+  const visible = writings.filter(
+    (w) => filter === 'all' || filter === `kind:${w.kind}`,
+  );
 
   return (
     <section className="mx-auto flex w-full max-w-[1100px] flex-col gap-12 px-4 pt-8 md:gap-14 md:px-0 md:pt-16">
@@ -24,7 +51,7 @@ const Writings: React.FC<WritingsProps> = ({
         <button
           type="button"
           onClick={onBack}
-          className="mb-8 text-[7px] tracking-[0.25em] uppercase opacity-50 transition-opacity hover:opacity-100 focus:outline-none md:text-[8px]"
+          className="mb-8 text-[7px] uppercase tracking-[0.25em] opacity-50 transition-opacity hover:opacity-100 focus:outline-none md:text-[8px]"
         >
           ← About
         </button>
@@ -39,35 +66,59 @@ const Writings: React.FC<WritingsProps> = ({
         Writing &amp; Research
       </h1>
 
-      <div className="writings-intro flex max-w-[540px] flex-col gap-4">
-        <p className="text-[9px] font-light uppercase leading-[2] tracking-[0.12em] opacity-80 md:text-[11px]">
-          Writing and research from an emerging research-led design practice.
-        </p>
-        <p className="text-[7.5px] font-medium uppercase leading-[2.2] tracking-[0.18em] opacity-35 md:text-[8.5px]">
-          These essays and notes document questions, methods, and directions
-          as they develop.
-        </p>
+      <div className="writings-intro flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
+        <div className="flex max-w-[540px] flex-col gap-4">
+          <p className="text-[9px] font-light uppercase leading-[2] tracking-[0.12em] opacity-80 md:text-[11px]">
+            Essays, visual essays, papers, case studies and whitepapers from an
+            emerging research-led design practice.
+          </p>
+          <p className="text-[7.5px] font-medium uppercase leading-[2.2] tracking-[0.18em] opacity-35 md:text-[8.5px]">
+            Each entry documents questions, methods, and directions as they
+            develop.
+          </p>
+        </div>
+
+        {writings.length > 0 && (
+          <FilterDropdown
+            groups={groups}
+            value={filter}
+            onChange={setFilter}
+            align="right"
+            isDarkMode={isDarkMode}
+            totalCount={writings.length}
+          />
+        )}
       </div>
 
       <main
-        aria-label="Writing and research articles"
+        aria-label="Writing and research"
         onMouseLeave={() => setActive(null)}
       >
         <div
-          className={`writings-list-head flex justify-between border-t pt-4 pb-3 text-[6px] uppercase tracking-[0.2em] opacity-60 ${structureLine}`}
+          className={`writings-list-head flex justify-between border-t pb-3 pt-4 text-[6px] uppercase tracking-[0.2em] opacity-60 ${structureLine}`}
         >
           <span>Index</span>
-          <span>{String(writings.length).padStart(2, '0')} Entries</span>
+          <span>{String(visible.length).padStart(2, '0')} Entries</span>
         </div>
 
-        {writings.length === 0 ? (
+        {visible.length === 0 ? (
           <p className="py-8 text-[8px] uppercase tracking-[0.25em] opacity-35">
-            No entries yet
+            {writings.length === 0
+              ? 'No entries yet'
+              : 'No entries match this filter'}
           </p>
         ) : (
-          writings.map((writing, index) => {
+          visible.map((writing, index) => {
             const isActive = active === index;
             const dimmed = active !== null && !isActive;
+            const meta = [
+              writing.version,
+              writing.length,
+              hasLink(writing.pdf) ? 'PDF' : null,
+              writing.status,
+            ]
+              .filter(Boolean)
+              .join(' · ');
 
             return (
               <article
@@ -81,12 +132,16 @@ const Writings: React.FC<WritingsProps> = ({
                   onFocus={() => setActive(index)}
                   onBlur={() => setActive(null)}
                   aria-label={`Read ${writing.title}`}
-                  className={`relative grid w-full grid-cols-[28px_1fr_auto] items-start gap-4 py-4 text-left transition-opacity duration-300 focus:outline-none md:grid-cols-[40px_1fr_auto] md:gap-8 ${
+                  className={`grid w-full grid-cols-[56px_1fr_auto] items-start gap-4 py-4 text-left transition-opacity duration-300 focus:outline-none md:grid-cols-[72px_110px_1fr_auto] md:gap-8 ${
                     dimmed ? 'opacity-50' : 'opacity-100'
                   }`}
                 >
                   <span className="pt-px font-mono text-[10px] md:text-[11px]">
-                    {String(index + 1).padStart(2, '0')}
+                    {writing.code}
+                  </span>
+
+                  <span className="hidden pt-px text-[6px] uppercase tracking-[0.2em] opacity-60 md:block">
+                    {writing.kind}
                   </span>
 
                   <span className="block">
@@ -99,17 +154,14 @@ const Writings: React.FC<WritingsProps> = ({
                         }`}
                       />
                     </span>
-                    <span className="mt-3 block max-w-[520px] text-[7.5px] font-medium leading-[2.2] tracking-[0.18em] opacity-35 md:text-[8.5px]">
-                      {writing.excerpt}
+                    <span className="mt-3 block font-mono text-[7px] opacity-50 md:text-[8px]">
+                      {meta}
                     </span>
                   </span>
 
                   <span className="flex flex-col items-end gap-1 pt-px text-[6px] uppercase tracking-[0.2em] opacity-60">
-                    <span>{writing.type}</span>
-                    {(writing.status || writing.date) && (
-                      <span>{writing.status || writing.date}</span>
-                    )}
-                    {writing.readingTime && <span>{writing.readingTime}</span>}
+                    <span>{writing.year}</span>
+                    <span className="md:hidden">{writing.kind}</span>
                   </span>
                 </button>
               </article>

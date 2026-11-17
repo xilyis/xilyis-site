@@ -1,7 +1,7 @@
 // Site-wide details. Edit here and every page updates.
 
 /** The portfolio name, used everywhere (hero, about, footer, page titles). */
-export const SITE_NAME = 'XILYAS';
+export const SITE_NAME = 'XILYIS';
 
 export const SITE_EMAIL = 'info@xilyas.com';
 
@@ -9,7 +9,7 @@ export const SITE_EMAIL = 'info@xilyas.com';
 export const SITE_REGION = 'JP-Tokyo';
 
 /** First year of the copyright line. The end year is the current year. */
-export const COPYRIGHT_START_YEAR = 2024;
+export const COPYRIGHT_START_YEAR = 2026;
 
 /**
  * Social links. Leave `url` empty to hide a link; fill it in to show it.
@@ -48,8 +48,10 @@ export const hasLink = (url?: string): boolean =>
  */
 export const HERO_LINKS: { label: string; url: string }[] = [
   { label: 'Link_01', url: '' },
-  { label: 'Link_02', url: '' },
-  { label: 'Link_03', url: '' },
+  /**
+   * { label: 'Link_02', url: '' },
+   * { label: 'Link_03', url: '' },
+  */
 ];
 
 /**
